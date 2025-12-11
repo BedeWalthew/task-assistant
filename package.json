@@ -1,0 +1,12 @@
+{
+  "name": "task-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}
