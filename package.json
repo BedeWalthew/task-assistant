@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm -r dev"
+    "dev": "pnpm -r dev",
+    "db:seed": "npx tsx packages/backend/prisma/seed.ts",
+    "db:studio": "pnpm -C packages/backend exec prisma studio"
   },
   "devDependencies": {
     "typescript": "^5.2.2"

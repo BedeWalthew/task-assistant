@@ -57,6 +57,30 @@ We will use a flat structure under `packages/` as requested:
 #### [NEW] [packages/backend/package.json](file:///packages/backend/package.json)
 #### [NEW] [packages/shared/package.json](file:///packages/shared/package.json)
 
+### [Phase 1: Core Data & Types]
+#### [NEW] [packages/shared/src/schemas/ticket.ts](file:///packages/shared/src/schemas/ticket.ts)
+- Define `TicketSchema` using Zod (id, title, status, priority, etc.)
+- Export `Ticket` type inferred from schema.
+
+#### [NEW] [packages/backend/prisma/schema.prisma](file:///packages/backend/prisma/schema.prisma)
+- Define `Ticket` model matching the Zod schema.
+- Define `Project` model.
+#### [NEW] [packages/backend/prisma/schema.prisma](file:///packages/backend/prisma/schema.prisma)
+- Define `Ticket` model matching the Zod schema.
+- Define `Project` model.
+- Configure PostgreSQL datasource.
+
+### [Phase 2: AI Agent (Python)]
+#### [NEW] [agent/](file:///agent)
+- **Location**: Root-level `agent/` directory (separate from JS packages).
+- **Stack**: Python 3.11+, Google Gen AI SDK.
+- **Files**:
+    - `requirements.txt` / `pyproject.toml`
+    - `main.py` (Entry point)
+    - `Dockerfile` (For Google Cloud Run/Container deployment)
+    - `src/` (Agent logic)
+
+
 ## Verification Plan
 
 ### Automated Tests

@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  key         String   @unique // Short code like "PROJ"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  tickets     Ticket[]
+
+  @@map("projects")
+}
+
+model Ticket {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  status      String   @default("TODO") // Mapped from Zod TicketStatus
+  priority    String   @default("MEDIUM") // Mapped from Zod TicketPriority
+  
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  
+  assigneeId  String?
+  source      String   @default("MANUAL") // JIRA, GITHUB, MANUAL
+  sourceUrl   String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("tickets")
+}
