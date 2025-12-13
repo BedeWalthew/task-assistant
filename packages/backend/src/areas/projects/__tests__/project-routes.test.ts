@@ -37,10 +37,21 @@ describe('GET /projects', () => {
     const project = response.body.data[0];
     
     expect(project).toHaveProperty('id');
-    expect(project).toHaveProperty('name');
-    expect(project).toHaveProperty('key');
+    expect(project).toHaveProperty('name', 'Test Project');
+    expect(project).toHaveProperty('key', 'TEST');
+    expect(project).toHaveProperty('description', 'A test project');
     expect(project).toHaveProperty('createdAt');
     expect(project).toHaveProperty('updatedAt');
+  });
+
+  it('should return an empty array if no projects exist', async () => {
+    await prisma.project.deleteMany();
+    const response = await request(app).get('/projects');
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('data');
+    expect(Array.isArray(response.body.data)).toBe(true);
+    expect(response.body.data).toHaveLength(0);
   });
 
   it('should return 404 for non-existent route', async () => {
