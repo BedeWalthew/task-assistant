@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -13,5 +13,5 @@ export default function Home() {
         <h1 className="text-4xl font-bold">Task Assistant</h1>
       </div>
     </main>
-  )
+  );
 }
