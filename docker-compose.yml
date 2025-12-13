@@ -26,6 +26,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
     ports:
       - "3001:3001"
+      - "5555:5555"
     volumes:
       - ./packages/backend:/app/packages/backend
       - ./packages/shared:/app/packages/shared

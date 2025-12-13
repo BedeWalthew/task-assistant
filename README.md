@@ -40,10 +40,13 @@ pnpm docker:db:migrate
 pnpm docker:db:reset
 ```
 
-**Seeding & Studio (Requires local node):**
+**Seeding & Studio:**
 ```bash
-pnpm db:seed
-pnpm db:studio
+# Seed Database
+pnpm docker:db:seed
+
+# Open Prisma Studio (accessible at http://localhost:5555)
+pnpm docker:db:studio
 ```
 
 ## Production

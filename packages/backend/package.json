@@ -8,7 +8,9 @@
     "start": "node dist/server.js",
     "db:generate": "prisma generate --schema=src/prisma/schema.prisma",
     "db:migrate": "prisma migrate dev --schema=src/prisma/schema.prisma",
-    "db:reset": "prisma migrate reset --schema=src/prisma/schema.prisma --force"
+    "db:reset": "prisma migrate reset --schema=src/prisma/schema.prisma --force",
+    "db:studio": "prisma studio --schema=src/prisma/schema.prisma --hostname 0.0.0.0",
+    "db:seed": "npx tsx src/prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "5.10.2",

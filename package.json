@@ -15,6 +15,8 @@
     "docker:db:generate": "docker compose exec -w /app/packages/backend backend pnpm db:generate",
     "docker:db:migrate": "docker compose exec -w /app/packages/backend backend pnpm db:migrate",
     "docker:db:reset": "docker compose exec -w /app/packages/backend backend pnpm db:reset",
+    "docker:db:seed": "docker compose exec -w /app/packages/backend backend pnpm db:seed",
+    "docker:db:studio": "docker compose exec -w /app/packages/backend backend pnpm db:studio",
     "docker:backend:build": "docker compose build backend",
     "docker:backend:up": "docker compose up -d backend",
     "docker:backend:down": "docker compose rm -s -f backend",
