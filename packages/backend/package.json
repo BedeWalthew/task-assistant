@@ -5,7 +5,10 @@
   "scripts": {
     "build": "tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "db:generate": "prisma generate --schema=src/prisma/schema.prisma",
+    "db:migrate": "prisma migrate dev --schema=src/prisma/schema.prisma",
+    "db:reset": "prisma migrate reset --schema=src/prisma/schema.prisma --force"
   },
   "dependencies": {
     "@prisma/client": "5.10.2",

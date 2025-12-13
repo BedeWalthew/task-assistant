@@ -40,6 +40,7 @@ ENV NODE_ENV production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 expressjs
 RUN npm install -g pnpm
+RUN apk add --no-cache openssl
 
 # Copy built artifacts and dependencies
 COPY --from=builder /app/node_modules ./node_modules
