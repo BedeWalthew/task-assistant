@@ -18,11 +18,19 @@ services:
     build:
       context: .
       dockerfile: packages/backend/Dockerfile
+    command: pnpm --filter @task-assistant/backend dev
+    user: root
     environment:
+      NODE_ENV: development
       PORT: 3001
       DATABASE_URL: postgres://user:password@postgres:5432/task_assistant?schema=public
     ports:
       - "3001:3001"
+    volumes:
+      - ./packages/backend:/app/packages/backend
+      - ./packages/shared:/app/packages/shared
+      - /app/packages/backend/node_modules
+      - /app/packages/shared/node_modules
     depends_on:
       - postgres
     networks:
@@ -32,10 +40,18 @@ services:
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
+    command: pnpm --filter @task-assistant/frontend dev
+    user: root
     environment:
+      NODE_ENV: development
       NEXT_PUBLIC_API_URL: http://localhost:3001
     ports:
       - "3000:3000"
+    volumes:
+      - ./packages/frontend:/app/packages/frontend
+      - ./packages/shared:/app/packages/shared
+      - /app/packages/frontend/node_modules
+      - /app/packages/shared/node_modules
     depends_on:
       - backend
     networks:

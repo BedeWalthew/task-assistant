@@ -1,36 +1,47 @@
-# Personal Planner + Task Assistant
+# Task Assistant
 
-A unified task management system with an AI Agent.
+A unified task management system with an AI Agent, fully containerized with Docker.
 
 ## Quick Start
 
-### 1. Database
-Start the PostgreSQL database (running on port 5433):
+### 1. Prerequisites
+- Docker & Docker Compose
+- Node.js & pnpm (optional, but recommended for scripts)
+
+### 2. Start Development Environment
+Run the full stack (Frontend + Backend + Database) in Docker with hot reloading:
 
 ```bash
-docker-compose up -d
-```
-
-### 2. Development
-Start the development server for all packages (Frontend + Backend):
-
-```bash
-pnpm dev
+pnpm docker:dev
+# OR
+docker compose up --build -d
 ```
 
 The services will be available at:
-- **Backend**: http://localhost:3001
-- **Frontend**: http://localhost:3000
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Backend API**: [http://localhost:3001](http://localhost:3001)
+- **Database**: `localhost:5433` (External access) / `5432` (Internal Docker network)
 
-## Commands
+### 3. Database Management
+Seed the database (requires container running):
+```bash
+pnpm db:seed
+```
 
-- `pnpm install`: Install dependencies
-- `pnpm build`: Build all packages
-- `pnpm db:seed`: Seed the database (run from root)
+Open Prisma Studio to inspect data:
+```bash
+pnpm db:studio
+```
 
-## Architecture
+## Useful Commands
 
-- `packages/frontend`: Next.js App
-- `packages/backend`: Express API
-- `packages/shared`: Shared Types & Schemas
-- `agent/`: Python AI Agent (Coming Soon)
+- `pnpm docker:dev`: Start dev environment (build + detach)
+- `pnpm docker:up`: Start existing containers
+- `pnpm docker:down`: Stop and remove containers
+- `pnpm docker:build`: Rebuild images
+
+## Documentation
+
+- [Backend Documentation](packages/backend/README.md)
+- [Frontend Documentation](packages/frontend/README.md)
+- [Shared Package Documentation](packages/shared/README.md)

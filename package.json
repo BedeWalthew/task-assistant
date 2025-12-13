@@ -6,7 +6,11 @@
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
     "db:seed": "npx tsx packages/backend/prisma/seed.ts",
-    "db:studio": "pnpm -C packages/backend exec prisma studio"
+    "db:studio": "pnpm -C packages/backend exec prisma studio",
+    "docker:up": "docker compose up -d",
+    "docker:build": "docker compose build",
+    "docker:down": "docker compose down",
+    "docker:dev": "docker compose up --build -d"
   },
   "devDependencies": {
     "typescript": "^5.2.2"
