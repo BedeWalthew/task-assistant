@@ -1,0 +1,29 @@
+[pr_description]
+publish_labels = true
+publish_description_as_comment = false
+
+[pr_reviewer]
+require_tests_review = true
+require_security_review = true
+require_estimate_effort_to_review = true
+inline_code_comments = true
+persistent_comment = true
+
+[pr_code_suggestions]
+num_code_suggestions = 4
+extra_instructions = """\
+Focus on:
+- TypeScript type safety
+- React best practices (Server Components, hooks rules)
+- Prisma ORM patterns
+- Security issues (SQL injection, XSS)
+- Performance (N+1 queries, unnecessary re-renders)
+"""
+
+[pr_improve]
+extended_mode = true
+num_code_suggestions_per_chunk = 3
+
+[config]
+model = "gemini/gemini-2.5-flash"
+fallback_models = ["gemini/gemini-2.5-flash"]
