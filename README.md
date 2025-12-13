@@ -8,13 +8,18 @@ A unified task management system with an AI Agent, fully containerized with Dock
 - Docker & Docker Compose
 - Node.js & pnpm (optional, but recommended for scripts)
 
-### 2. Start Development Environment
+### 2. Configuration
+Copy the example environment file:
+```bash
+cp .env.example .env
+```
+This sets up default values for local development.
+
+### 3. Start Development Environment
 Run the full stack (Frontend + Backend + Database) in Docker with hot reloading:
 
 ```bash
 pnpm docker:dev
-# OR
-docker compose up --build -d
 ```
 
 The services will be available at:
@@ -22,20 +27,35 @@ The services will be available at:
 - **Backend API**: [http://localhost:3001](http://localhost:3001)
 - **Database**: `localhost:5433` (External access) / `5432` (Internal Docker network)
 
-### 3. Database Management
-Seed the database (requires container running):
+### 4. Database Management
+**Running inside Docker (Recommended):**
 ```bash
-pnpm db:seed
+# Generate Client
+pnpm docker:db:generate
+
+# Run Migrations
+pnpm docker:db:migrate
+
+# Reset Database
+pnpm docker:db:reset
 ```
 
-Open Prisma Studio to inspect data:
+**Seeding & Studio (Requires local node):**
 ```bash
+pnpm db:seed
 pnpm db:studio
+```
+
+## Production
+To run the optimized production build (no source mounting, non-root user):
+```bash
+pnpm docker:prod
 ```
 
 ## Useful Commands
 
 - `pnpm docker:dev`: Start dev environment (build + detach)
+- `pnpm docker:prod`: Start production environment
 - `pnpm docker:up`: Start existing containers
 - `pnpm docker:down`: Stop and remove containers
 - `pnpm docker:build`: Rebuild images

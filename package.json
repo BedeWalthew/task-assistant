@@ -11,6 +11,7 @@
     "docker:build": "docker compose build",
     "docker:down": "docker compose down",
     "docker:dev": "docker compose up --build -d",
+    "docker:prod": "docker compose -f docker-compose.prod.yml up --build -d",
     "docker:db:generate": "docker compose exec -w /app/packages/backend backend pnpm db:generate",
     "docker:db:migrate": "docker compose exec -w /app/packages/backend backend pnpm db:migrate",
     "docker:db:reset": "docker compose exec -w /app/packages/backend backend pnpm db:reset",

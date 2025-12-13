@@ -3,6 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
+    restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -18,19 +19,13 @@ services:
     build:
       context: .
       dockerfile: packages/backend/Dockerfile
-    command: pnpm --filter @task-assistant/backend dev
-    user: root
+    restart: always
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       PORT: 3001
       DATABASE_URL: ${DATABASE_URL}
     ports:
       - "3001:3001"
-    volumes:
-      - ./packages/backend:/app/packages/backend
-      - ./packages/shared:/app/packages/shared
-      - /app/packages/backend/node_modules
-      - /app/packages/shared/node_modules
     depends_on:
       - postgres
     networks:
@@ -40,21 +35,14 @@ services:
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
-    command: pnpm --filter @task-assistant/frontend dev
-    user: root
+    restart: always
     environment:
-      NODE_ENV: development
-      # Used by client-side code
+      NODE_ENV: production
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-      # Used by server-side code (ProjectList.tsx)
       INTERNAL_API_URL: ${INTERNAL_API_URL}
+      HOSTNAME: "0.0.0.0"
     ports:
       - "3000:3000"
-    volumes:
-      - ./packages/frontend:/app/packages/frontend
-      - ./packages/shared:/app/packages/shared
-      - /app/packages/frontend/node_modules
-      - /app/packages/shared/node_modules
     depends_on:
       - backend
     networks:
