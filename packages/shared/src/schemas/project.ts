@@ -13,3 +13,6 @@ export type Project = z.infer<typeof ProjectSchema>;
 
 export const CreateProjectSchema = ProjectSchema.omit({ id: true, createdAt: true, updatedAt: true });
 export type CreateProjectInput = z.infer<typeof CreateProjectSchema>;
+
+export const UpdateProjectSchema = ProjectSchema.omit({ id: true, createdAt: true, updatedAt: true }).partial();
+export type UpdateProjectInput = z.infer<typeof UpdateProjectSchema>;
