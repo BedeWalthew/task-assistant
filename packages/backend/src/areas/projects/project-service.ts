@@ -1,4 +1,5 @@
 import { prisma } from "../../db/client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type {
   CreateProjectInput,
   UpdateProjectInput,
@@ -28,10 +29,11 @@ export const create = async (data: CreateProjectInput) => {
     return await prisma.project.create({
       data,
     });
-  } catch (error: any) {
-    // Handle duplicate key error
-    if (error.code === "P2002") {
-      throw new AppError("Project with this key already exists", 409);
+  } catch (error) {
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        throw new AppError("Project with this key already exists", 409);
+      }
     }
     throw error;
   }
@@ -43,12 +45,14 @@ export const update = async (id: string, data: UpdateProjectInput) => {
       where: { id },
       data,
     });
-  } catch (error: any) {
-    if (error.code === "P2025") {
-      throw new AppError("Project not found", 404);
-    }
-    if (error.code === "P2002") {
-      throw new AppError("Project with this key already exists", 409);
+  } catch (error) {
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        throw new AppError("Project not found", 404);
+      }
+      if (error.code === "P2002") {
+        throw new AppError("Project with this key already exists", 409);
+      }
     }
     throw error;
   }
@@ -59,9 +63,11 @@ export const deleteProject = async (id: string) => {
     await prisma.project.delete({
       where: { id },
     });
-  } catch (error: any) {
-    if (error.code === "P2025") {
-      throw new AppError("Project not found", 404);
+  } catch (error) {
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        throw new AppError("Project not found", 404);
+      }
     }
     throw error;
   }
