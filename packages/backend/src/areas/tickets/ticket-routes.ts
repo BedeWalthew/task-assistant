@@ -48,6 +48,53 @@ export const ticketsRouter = Router();
  *         updatedAt:
  *           type: string
  *           format: date-time
+ *     CreateTicketRequest:
+ *       type: object
+ *       required:
+ *         - title
+ *         - projectId
+ *       properties:
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         status:
+ *           type: string
+ *           enum: ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"]
+ *         priority:
+ *           type: string
+ *           enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+ *         projectId:
+ *           type: string
+ *           format: uuid
+ *         assigneeId:
+ *           type: string
+ *         source:
+ *           type: string
+ *         sourceUrl:
+ *           type: string
+ *     UpdateTicketRequest:
+ *       type: object
+ *       properties:
+ *         title:
+ *           type: string
+ *         description:
+ *           type: string
+ *         status:
+ *           type: string
+ *           enum: ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"]
+ *         priority:
+ *           type: string
+ *           enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+ *         projectId:
+ *           type: string
+ *           format: uuid
+ *         assigneeId:
+ *           type: string
+ *         source:
+ *           type: string
+ *         sourceUrl:
+ *           type: string
  */
 
 /**
@@ -86,7 +133,7 @@ ticketsRouter.get("/", TicketController.getAll);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Ticket'
+ *             $ref: '#/components/schemas/CreateTicketRequest'
  *     responses:
  *       201:
  *         description: Ticket created
@@ -148,7 +195,7 @@ ticketsRouter.get(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Ticket'
+ *             $ref: '#/components/schemas/UpdateTicketRequest'
  *     responses:
  *       200:
  *         description: Ticket updated
