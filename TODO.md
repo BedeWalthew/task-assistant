@@ -60,10 +60,10 @@
    - [x] Tests for all CRUD operations
 
 2. **Tickets**
-   - [ ] Define ticket routes
-   - [ ] Implement ticket CRUD operations
-   - [ ] Add ticket-project relationships
-   - [ ] Test ticket operations
+   - [x] Define ticket routes
+   - [x] Implement ticket CRUD operations
+   - [x] Add ticket-project relationships
+   - [x] Test ticket operations
 
 ### Phase 2: Frontend Integration
 
