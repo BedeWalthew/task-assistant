@@ -1,0 +1,214 @@
+import request from "supertest";
+import { app } from "../../../app";
+import { prisma } from "../../../db/client";
+
+const createProject = async () => {
+  return prisma.project.create({
+    data: {
+      name: "Test Project",
+      key: `T${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      description: "Project for ticket tests",
+    },
+  });
+};
+
+describe("Tickets API", () => {
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  describe("GET /tickets", () => {
+    beforeEach(async () => {
+      await prisma.ticket.deleteMany();
+      await prisma.project.deleteMany();
+      const project = await createProject();
+      await prisma.ticket.createMany({
+        data: [
+          {
+            title: "First ticket",
+            projectId: project.id,
+            priority: "HIGH",
+            status: "TODO",
+          },
+          {
+            title: "Second ticket",
+            projectId: project.id,
+            priority: "MEDIUM",
+            status: "IN_PROGRESS",
+          },
+        ],
+      });
+    });
+
+    it("should list tickets", async () => {
+      const response = await request(app).get("/tickets");
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body.data)).toBe(true);
+      expect(response.body.data.length).toBe(2);
+      expect(response.body.data[0]).toHaveProperty("projectId");
+    });
+
+    it("should return empty array when none exist", async () => {
+      await prisma.ticket.deleteMany();
+      const response = await request(app).get("/tickets");
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toHaveLength(0);
+    });
+  });
+
+  describe("POST /tickets", () => {
+    let projectId: string;
+
+    beforeEach(async () => {
+      await prisma.ticket.deleteMany();
+      await prisma.project.deleteMany();
+      const project = await createProject();
+      projectId = project.id;
+    });
+
+    it("should create a ticket with valid data", async () => {
+      const payload = {
+        title: "Create ticket",
+        description: "A new ticket",
+        status: "IN_PROGRESS",
+        priority: "CRITICAL",
+        projectId,
+      };
+
+      const response = await request(app).post("/tickets").send(payload);
+
+      expect(response.status).toBe(201);
+      expect(response.body.data.title).toBe(payload.title);
+      expect(response.body.data.projectId).toBe(projectId);
+      expect(response.body.data.status).toBe(payload.status);
+      expect(response.body.data.priority).toBe(payload.priority);
+    });
+
+    it("should return 400 for invalid data", async () => {
+      const response = await request(app)
+        .post("/tickets")
+        .send({ description: "missing title", projectId });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 404 for non-existent project", async () => {
+      const response = await request(app).post("/tickets").send({
+        title: "No project",
+        projectId: "00000000-0000-0000-0000-000000000000",
+      });
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe("GET /tickets/:id", () => {
+    let ticketId: string;
+
+    beforeAll(async () => {
+      await prisma.ticket.deleteMany();
+      await prisma.project.deleteMany();
+      const project = await createProject();
+      const ticket = await prisma.ticket.create({
+        data: {
+          title: "Single ticket",
+          projectId: project.id,
+        },
+      });
+      ticketId = ticket.id;
+    });
+
+    it("should get ticket by id", async () => {
+      const response = await request(app).get(`/tickets/${ticketId}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.id).toBe(ticketId);
+    });
+
+    it("should return 404 for unknown id", async () => {
+      const response = await request(app).get(
+        "/tickets/00000000-0000-0000-0000-000000000000"
+      );
+
+      expect(response.status).toBe(404);
+    });
+
+    it("should return 400 for invalid uuid", async () => {
+      const response = await request(app).get("/tickets/not-a-uuid");
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe("PUT /tickets/:id", () => {
+    let ticketId: string;
+
+    beforeEach(async () => {
+      await prisma.ticket.deleteMany();
+      await prisma.project.deleteMany();
+      const project = await createProject();
+      const ticket = await prisma.ticket.create({
+        data: {
+          title: "Updatable ticket",
+          projectId: project.id,
+        },
+      });
+      ticketId = ticket.id;
+    });
+
+    it("should update a ticket", async () => {
+      const response = await request(app).put(`/tickets/${ticketId}`).send({
+        title: "Updated title",
+        status: "DONE",
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.title).toBe("Updated title");
+      expect(response.body.data.status).toBe("DONE");
+    });
+
+    it("should return 404 for non-existent ticket", async () => {
+      const response = await request(app).put(
+        "/tickets/00000000-0000-0000-0000-000000000000"
+      );
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  describe("DELETE /tickets/:id", () => {
+    let ticketId: string;
+
+    beforeEach(async () => {
+      await prisma.ticket.deleteMany();
+      await prisma.project.deleteMany();
+      const project = await createProject();
+      const ticket = await prisma.ticket.create({
+        data: {
+          title: "Deletable ticket",
+          projectId: project.id,
+        },
+      });
+      ticketId = ticket.id;
+    });
+
+    it("should delete a ticket", async () => {
+      const response = await request(app).delete(`/tickets/${ticketId}`);
+
+      expect(response.status).toBe(204);
+
+      const getResponse = await request(app).get(`/tickets/${ticketId}`);
+      expect(getResponse.status).toBe(404);
+    });
+
+    it("should return 404 for non-existent id", async () => {
+      const response = await request(app).delete(
+        "/tickets/00000000-0000-0000-0000-000000000000"
+      );
+
+      expect(response.status).toBe(404);
+    });
+  });
+});

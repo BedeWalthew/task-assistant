@@ -6,6 +6,7 @@ import { swaggerSpec } from "./config/swagger";
 import "express-async-errors";
 
 import { projectsRouter } from "./areas/projects/project-routes";
+import { ticketsRouter } from "./areas/tickets/ticket-routes";
 import { errorHandler } from "./common/middleware/error";
 
 const app = express();
@@ -22,6 +23,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/projects", projectsRouter);
+app.use("/tickets", ticketsRouter);
 
 app.use(errorHandler);
 
