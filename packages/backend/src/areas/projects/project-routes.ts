@@ -17,7 +17,6 @@ export const projectsRouter = Router();
  *       type: object
  *       required:
  *         - name
- *         - key
  *       properties:
  *         id:
  *           type: string
@@ -29,6 +28,7 @@ export const projectsRouter = Router();
  *         key:
  *           type: string
  *           description: Unique project key (e.g., "PROJ")
+ *           readOnly: true
  *         description:
  *           type: string
  *           description: The project description
@@ -152,8 +152,6 @@ projectsRouter.get(
  *             type: object
  *             properties:
  *               name:
- *                 type: string
- *               key:
  *                 type: string
  *               description:
  *                 type: string
