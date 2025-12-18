@@ -27,6 +27,7 @@
   - [x] Verify response structure
   - [x] Handle empty data
   - [x] 404 handling
+- [x] API documentation (Swagger/OpenAPI)
 
 ### Frontend
 
@@ -107,7 +108,6 @@
 ### Quality
 
 - [ ] E2E tests (Playwright)
-- [ ] API documentation (Swagger/OpenAPI)
 - [ ] Frontend component tests
 - [ ] Performance benchmarks
 

@@ -5,6 +5,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
+    "test": "pnpm run --filter backend test",
     "db:seed": "npx tsx packages/backend/src/prisma/seed.ts",
     "db:studio": "pnpm -C packages/backend exec prisma studio --schema=src/prisma/schema.prisma",
     "docker:up": "docker compose up -d",
