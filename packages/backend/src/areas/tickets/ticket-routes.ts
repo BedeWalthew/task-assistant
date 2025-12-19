@@ -6,6 +6,7 @@ import {
   CreateTicketSchema,
   UpdateTicketSchema,
   TicketSchema,
+  TicketFilterSchema,
 } from "@task-assistant/shared";
 
 export const ticketsRouter = Router();
@@ -120,7 +121,15 @@ export const ticketsRouter = Router();
  *               items:
  *                 $ref: '#/components/schemas/Ticket'
  */
-ticketsRouter.get("/", TicketController.getAll);
+ticketsRouter.get(
+  "/",
+  validate(
+    z.object({
+      query: TicketFilterSchema,
+    })
+  ),
+  TicketController.getAll
+);
 
 /**
  * @swagger

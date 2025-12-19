@@ -1,8 +1,10 @@
 import { type Request, type Response } from "express";
+import { TicketFilterSchema } from "@task-assistant/shared";
 import * as TicketService from "./ticket-service";
 
-export const getAll = async (_req: Request, res: Response) => {
-  const tickets = await TicketService.getAll();
+export const getAll = async (req: Request, res: Response) => {
+  const filters = TicketFilterSchema.parse(req.query);
+  const tickets = await TicketService.getAll(filters);
   res.json({ data: tickets });
 };
 
