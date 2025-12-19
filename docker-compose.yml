@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -30,8 +30,6 @@ services:
     volumes:
       - ./packages/backend:/app/packages/backend
       - ./packages/shared:/app/packages/shared
-      - /app/packages/backend/node_modules
-      - /app/packages/shared/node_modules
     depends_on:
       - postgres
     networks:
@@ -54,8 +52,6 @@ services:
     volumes:
       - ./packages/frontend:/app/packages/frontend
       - ./packages/shared:/app/packages/shared
-      - /app/packages/frontend/node_modules
-      - /app/packages/shared/node_modules
     depends_on:
       - backend
     networks:

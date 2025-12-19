@@ -67,10 +67,12 @@
 
 ### Phase 2: Frontend Integration
 
-- [ ] Project creation form
-- [ ] Project detail page
-- [ ] Ticket creation UI
-- [ ] Ticket list & filtering
+- [x] Project creation form (baseline UI)
+- [x] Project detail page (baseline UI)
+- [x] Ticket creation UI (baseline)
+- [x] Ticket list (baseline)
+- [ ] Ticket filtering
+- [ ] Board-style views (Notion-like) for projects and tickets (list / Kanban / other view types)
 
 ### Phase 3: Authentication
 
