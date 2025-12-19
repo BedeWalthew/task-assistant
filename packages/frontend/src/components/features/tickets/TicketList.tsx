@@ -1,23 +1,38 @@
 import { Ticket } from "@task-assistant/shared";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const API_URL = process.env.INTERNAL_API_URL || "http://backend:3001";
 
-async function getTickets(): Promise<Ticket[]> {
+type TicketsResult =
+  | { data: Ticket[]; error?: undefined }
+  | { data: []; error: string };
+
+async function getTickets(): Promise<TicketsResult> {
   try {
     const res = await fetch(`${API_URL}/tickets`, { cache: "no-store" });
     if (!res.ok) {
       throw new Error(`Failed to fetch tickets: ${res.statusText}`);
     }
     const json = await res.json();
-    return json.data;
+    return { data: json.data };
   } catch (error) {
     console.error(error);
-    return [];
+    return { data: [], error: "Unable to load tickets right now." };
   }
 }
 
 export default async function TicketList() {
-  const tickets = await getTickets();
+  const result = await getTickets();
+  const tickets = result.data;
+
+  if (result.error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Could not load tickets</AlertTitle>
+        <AlertDescription>{result.error}</AlertDescription>
+      </Alert>
+    );
+  }
 
   if (tickets.length === 0) {
     return (
