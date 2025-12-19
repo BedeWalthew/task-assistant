@@ -46,10 +46,12 @@ export type UpdateTicketInput = z.infer<typeof UpdateTicketSchema>;
 const numberFromQuery = (field: string, fallback: number, maxValue?: number) =>
   z
     .preprocess((value) => {
-      if (value === undefined) return fallback;
+      if (value === undefined || value === null || value === "") {
+        return undefined; // let .default apply fallback
+      }
       const parsed =
         typeof value === "string" ? parseInt(value, 10) : Number(value);
-      return Number.isNaN(parsed) ? fallback : parsed;
+      return Number.isNaN(parsed) ? undefined : parsed; // undefined triggers .default
     }, z.number().int().positive())
     .default(fallback)
     .refine((val) => (maxValue ? val <= maxValue : true), {
