@@ -24,6 +24,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type TicketCreateFormProps = {
   projectId?: string;
@@ -43,7 +50,7 @@ export function TicketCreateForm({ projectId }: TicketCreateFormProps) {
       description: "",
       status: "TODO",
       priority: "MEDIUM",
-      projectId: projectId || "",
+      projectId: projectId ?? undefined,
       assigneeId: "",
       source: "MANUAL",
       sourceUrl: "",
@@ -124,18 +131,20 @@ export function TicketCreateForm({ projectId }: TicketCreateFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status</FormLabel>
-                    <FormControl>
-                      <select
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        {...field}
-                      >
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
                         {TicketStatus.options.map((status) => (
-                          <option key={status} value={status}>
+                          <SelectItem key={status} value={status}>
                             {status}
-                          </option>
+                          </SelectItem>
                         ))}
-                      </select>
-                    </FormControl>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -147,18 +156,20 @@ export function TicketCreateForm({ projectId }: TicketCreateFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Priority</FormLabel>
-                    <FormControl>
-                      <select
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        {...field}
-                      >
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select priority" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
                         {TicketPriority.options.map((priority) => (
-                          <option key={priority} value={priority}>
+                          <SelectItem key={priority} value={priority}>
                             {priority}
-                          </option>
+                          </SelectItem>
                         ))}
-                      </select>
-                    </FormControl>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
