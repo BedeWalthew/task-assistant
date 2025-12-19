@@ -35,13 +35,9 @@
 - [x] shadcn/ui component library
 - [x] Basic project listing page
 
----
-
-## 🚧 In Progress
-
 ### Testing & Quality
 
-- [ ] Add test database configuration for Docker
+- [x] Add test database configuration for Docker
 - [ ] CI/CD pipeline for automated testing
 - [ ] Test coverage reporting
 
@@ -73,6 +69,24 @@
 - [x] Ticket list (baseline)
 - [ ] Ticket filtering
 - [ ] Board-style views (Notion-like) for projects and tickets (list / Kanban / other view types)
+
+#### Phase 2 Detail
+
+- Ticket filtering
+
+  - [ ] Shared schema: `TicketFilterSchema` (`projectId`, `status`, `priority`, `assigneeId`, `search`, `sort`, `page`, `limit`) in `packages/shared`
+  - [ ] Backend: validate query, map to Prisma `where/orderBy`, paginate `{items, total, page, pageSize}`
+  - [ ] Tests: service combinations + route integration (200 + 400 on invalid)
+  - [ ] Frontend: URL-driven filters (query params), server component data load, client filter bar (shadcn Select/Input/Tabs), empty/loading states
+  - [ ] Performance: add DB indexes (status, projectId, assigneeId, priority), safe page-size defaults
+
+- Board-style views
+  - [ ] Data model: ensure ticket `status` enum (e.g., BACKLOG/TODO/IN_PROGRESS/REVIEW/DONE) + `position` for ordering; Prisma migration + seeds
+  - [ ] Backend read: `view=board` response grouped by status, sorted by `position`
+  - [ ] Backend write: update endpoint payload `{status, position}` (or bulk reorder) with Zod validation
+  - [ ] Tests: reorder logic + move-between-column integration
+  - [ ] Frontend: Kanban view (server-loaded data) with client drag-and-drop (`@dnd-kit`), optimistic move + server action persist, revalidatePath on success; keep list view wired to filters
+  - [ ] UX: column counts, quick-add per column (optional), horizontal scroll on mobile, ARIA for draggable items
 
 ### Phase 3: Authentication
 

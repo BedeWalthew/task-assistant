@@ -40,13 +40,25 @@ describe("Tickets API", () => {
       });
     });
 
-    it("should list tickets", async () => {
+    it("should list tickets with pagination envelope", async () => {
       const response = await request(app).get("/tickets");
 
       expect(response.status).toBe(200);
-      expect(Array.isArray(response.body.data)).toBe(true);
-      expect(response.body.data.length).toBe(2);
-      expect(response.body.data[0]).toHaveProperty("projectId");
+      expect(response.body.data).toHaveProperty("items");
+      expect(response.body.data).toHaveProperty("total", 2);
+      expect(response.body.data.items.length).toBe(2);
+      expect(response.body.data.items[0]).toHaveProperty("projectId");
+      expect(response.body.data).toMatchObject({ page: 1, pageSize: 20 });
+    });
+
+    it("should filter by status", async () => {
+      const response = await request(app)
+        .get("/tickets")
+        .query({ status: "TODO" });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.total).toBe(1);
+      expect(response.body.data.items[0].status).toBe("TODO");
     });
 
     it("should return empty array when none exist", async () => {
@@ -54,7 +66,8 @@ describe("Tickets API", () => {
       const response = await request(app).get("/tickets");
 
       expect(response.status).toBe(200);
-      expect(response.body.data).toHaveLength(0);
+      expect(response.body.data.total).toBe(0);
+      expect(response.body.data.items).toHaveLength(0);
     });
   });
 
