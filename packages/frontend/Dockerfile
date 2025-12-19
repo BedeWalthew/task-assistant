@@ -1,6 +1,7 @@
-FROM node:22-alpine AS builder
-RUN apk add --no-cache libc6-compat
-RUN npm install -g pnpm
+FROM node:22-slim AS builder
+# Install pnpm; slim images use apt instead of apk
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/* \
+  && npm install -g pnpm
 
 WORKDIR /app
 
@@ -30,7 +31,10 @@ RUN pnpm --filter @task-assistant/shared build
 RUN pnpm --filter @task-assistant/frontend build
 
 # Runner stage
-FROM node:22-alpine AS runner
+FROM node:22-slim AS runner
+# Install pnpm; slim images use apt instead of apk
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/* \
+  && npm install -g pnpm
 WORKDIR /app
 
 ENV NODE_ENV production
