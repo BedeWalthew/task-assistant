@@ -11,8 +11,9 @@
     "db:reset": "prisma migrate reset --schema=src/prisma/schema.prisma --force",
     "db:studio": "prisma studio --schema=src/prisma/schema.prisma --hostname 0.0.0.0",
     "db:seed": "npx tsx src/prisma/seed.ts",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --runInBand --coverage"
   },
   "dependencies": {
     "@prisma/client": "5.10.2",
