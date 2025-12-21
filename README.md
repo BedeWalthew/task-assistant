@@ -80,3 +80,10 @@ pnpm docker:prod
 - [Backend Documentation](packages/backend/README.md)
 - [Frontend Documentation](packages/frontend/README.md)
 - [Shared Package Documentation](packages/shared/README.md)
+
+## Highlights (current sprint)
+
+- Ticket filtering & sorting (URL-driven, server-rendered)
+- Kanban board view for tickets (status columns, compact cards)
+- Shadcn dialog-based ticket creation modal
+- Project keys displayed on ticket cards/board

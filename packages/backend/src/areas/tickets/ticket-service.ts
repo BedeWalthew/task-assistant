@@ -1,5 +1,5 @@
 import { prisma } from "../../db/client";
-import { Prisma } from "@prisma/client";
+import { Prisma, type Ticket } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 import type {
@@ -49,22 +49,61 @@ export const getAll = async (filters: TicketFilterInput) => {
 
   const skip = (safePage - 1) * safeLimit;
 
-  // Custom priority ordering (HIGH > MEDIUM > LOW > CRITICAL for desc, reversed for asc)
+  // Custom priority ordering pushed to the DB (LOW > MEDIUM > HIGH > CRITICAL for asc, reversed for desc)
   if (safeSortBy === "priority") {
-    const priorityOrder = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
-    const orderIndex = (value: string) =>
-      priorityOrder.findIndex((p) => p === value);
-    const all = await prisma.ticket.findMany({
-      where,
-    });
-    const sorted = all.sort((a, b) => {
-      const diff = orderIndex(a.priority) - orderIndex(b.priority);
-      return safeSortOrder === "asc" ? diff : -diff;
-    });
-    const paged = sorted.slice(skip, skip + safeLimit);
+    const whereClauses: Prisma.Sql[] = [];
+
+    if (projectId) {
+      whereClauses.push(Prisma.sql`"projectId" = ${projectId}`);
+    }
+    if (status) {
+      whereClauses.push(Prisma.sql`"status" = ${status}`);
+    }
+    if (priority) {
+      whereClauses.push(Prisma.sql`"priority" = ${priority}`);
+    }
+    if (assigneeId) {
+      whereClauses.push(Prisma.sql`"assigneeId" = ${assigneeId}`);
+    }
+    if (search) {
+      const pattern = `%${search}%`;
+      whereClauses.push(
+        Prisma.sql`(title ILIKE ${pattern} OR description ILIKE ${pattern})`
+      );
+    }
+
+    const whereSql =
+      whereClauses.length > 0
+        ? Prisma.sql`WHERE ${Prisma.join(whereClauses, " AND ")}`
+        : Prisma.sql``;
+    const priorityCase = Prisma.sql`
+      CASE priority
+        WHEN 'LOW' THEN 1
+        WHEN 'MEDIUM' THEN 2
+        WHEN 'HIGH' THEN 3
+        WHEN 'CRITICAL' THEN 4
+        ELSE 5
+      END
+    `;
+    const sortDirection =
+      safeSortOrder === "asc" ? Prisma.sql`ASC` : Prisma.sql`DESC`;
+
+    const items = await prisma.$queryRaw<Ticket[]>`
+      SELECT * FROM "tickets"
+      ${whereSql}
+      ORDER BY ${priorityCase} ${sortDirection}, "createdAt" DESC
+      OFFSET ${skip}
+      LIMIT ${safeLimit}
+    `;
+
+    const [{ count }] = await prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*)::bigint as count FROM "tickets"
+      ${whereSql}
+    `;
+
     return {
-      items: paged,
-      total: sorted.length,
+      items,
+      total: Number(count),
       page: safePage,
       pageSize: safeLimit,
     };

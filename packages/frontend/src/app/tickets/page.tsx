@@ -89,13 +89,16 @@ async function fetchTickets(
 }
 
 type TicketsPageProps = {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
+  searchParams: Record<string, string | string[] | undefined>;
 };
 
 export default async function TicketsPage({ searchParams }: TicketsPageProps) {
-  const resolvedSearchParams = await searchParams;
+  const resolvedSearchParams = searchParams;
   const parsed = TicketFilterSchema.safeParse(toObject(resolvedSearchParams));
   const filters = parsed.success ? parsed.data : TicketFilterSchema.parse({});
+  if (!parsed.success) {
+    console.error("Invalid search parameters:", parsed.error);
+  }
   const projects = await fetchProjects();
   const result = await fetchTickets(filters);
   const view =
