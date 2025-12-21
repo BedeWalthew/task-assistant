@@ -7,6 +7,7 @@ import {
   UpdateTicketSchema,
   TicketSchema,
   TicketFilterSchema,
+  MoveTicketSchema,
 } from "@task-assistant/shared";
 
 export const ticketsRouter = Router();
@@ -224,6 +225,17 @@ ticketsRouter.put(
     })
   ),
   TicketController.update
+);
+
+ticketsRouter.post(
+  "/:id/move",
+  validate(
+    z.object({
+      params: z.object({ id: z.string().uuid() }),
+      body: MoveTicketSchema,
+    })
+  ),
+  TicketController.move
 );
 
 /**

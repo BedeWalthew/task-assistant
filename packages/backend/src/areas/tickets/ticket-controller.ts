@@ -30,3 +30,9 @@ export const deleteTicket = async (req: Request, res: Response) => {
   await TicketService.deleteTicket(id);
   res.status(204).send();
 };
+
+export const move = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const ticket = await TicketService.move(id, req.body);
+  res.json({ data: ticket });
+};
