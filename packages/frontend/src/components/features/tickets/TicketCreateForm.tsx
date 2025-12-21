@@ -34,11 +34,15 @@ import {
 
 type TicketCreateFormProps = {
   projectId?: string;
+  onSuccess?: () => void;
 };
 
 type FormValues = z.infer<typeof CreateTicketSchema>;
 
-export function TicketCreateForm({ projectId }: TicketCreateFormProps) {
+export function TicketCreateForm({
+  projectId,
+  onSuccess,
+}: TicketCreateFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -64,6 +68,7 @@ export function TicketCreateForm({ projectId }: TicketCreateFormProps) {
       if (result.success) {
         toast({ title: "Ticket created" });
         form.reset({ ...values, title: "", description: "" });
+        onSuccess?.();
       } else if (result.error) {
         setError(result.error);
       }
