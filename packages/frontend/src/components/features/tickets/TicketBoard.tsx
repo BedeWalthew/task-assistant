@@ -14,6 +14,13 @@ const statusTitles: Record<TicketStatus, string> = {
   BLOCKED: "Blocked",
 };
 
+const statusAccent: Record<TicketStatus, string> = {
+  TODO: "bg-slate-100 text-slate-700 border-slate-200",
+  IN_PROGRESS: "bg-blue-50 text-blue-700 border-blue-100",
+  DONE: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  BLOCKED: "bg-amber-50 text-amber-800 border-amber-100",
+};
+
 export function TicketBoard({ items, projectLabels }: TicketBoardProps) {
   const grouped = statusOrder.map((status) => ({
     status,
@@ -25,14 +32,16 @@ export function TicketBoard({ items, projectLabels }: TicketBoardProps) {
       {grouped.map(({ status, tickets }) => (
         <div
           key={status}
-          className="flex min-h-[240px] flex-col gap-3 rounded-xl border bg-card/60 p-4"
+          className="flex min-h-[260px] flex-col gap-3 rounded-xl border bg-gradient-to-b from-background via-card/50 to-card p-4 shadow-sm"
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold">
                 {statusTitles[status]}
               </span>
-              <span className="text-xs text-muted-foreground">
+              <span
+                className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusAccent[status]}`}
+              >
                 {tickets.length}
               </span>
             </div>

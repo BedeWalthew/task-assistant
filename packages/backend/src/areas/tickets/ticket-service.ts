@@ -49,6 +49,27 @@ export const getAll = async (filters: TicketFilterInput) => {
 
   const skip = (safePage - 1) * safeLimit;
 
+  // Custom priority ordering (HIGH > MEDIUM > LOW > CRITICAL for desc, reversed for asc)
+  if (safeSortBy === "priority") {
+    const priorityOrder = ["LOW", "MEDIUM", "HIGH", "CRITICAL"] as const;
+    const orderIndex = (value: string) =>
+      priorityOrder.findIndex((p) => p === value);
+    const all = await prisma.ticket.findMany({
+      where,
+    });
+    const sorted = all.sort((a, b) => {
+      const diff = orderIndex(a.priority) - orderIndex(b.priority);
+      return safeSortOrder === "asc" ? diff : -diff;
+    });
+    const paged = sorted.slice(skip, skip + safeLimit);
+    return {
+      items: paged,
+      total: sorted.length,
+      page: safePage,
+      pageSize: safeLimit,
+    };
+  }
+
   const [items, total] = await Promise.all([
     prisma.ticket.findMany({
       where,

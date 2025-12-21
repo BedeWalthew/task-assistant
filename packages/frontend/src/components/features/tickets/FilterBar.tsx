@@ -47,17 +47,38 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
     router.push(`${pathname}?${params.toString()}`);
   };
 
+  const currentSortBy = TicketSortBy.options.includes(
+    searchParams.sortBy as (typeof TicketSortBy.options)[number]
+  )
+    ? searchParams.sortBy
+    : TicketSortBy.options[0];
+
+  const currentSortOrder = TicketSortOrder.options.includes(
+    searchParams.sortOrder as (typeof TicketSortOrder.options)[number]
+  )
+    ? searchParams.sortOrder
+    : TicketSortOrder.options[1];
+
+  const combinedSortValue = `${currentSortBy}:${currentSortOrder}`;
+
   const handleSortChange = (value: string) => {
     const [sortBy, sortOrder] = value.split(":");
+    const safeSortBy = TicketSortBy.options.includes(
+      sortBy as (typeof TicketSortBy.options)[number]
+    )
+      ? sortBy
+      : TicketSortBy.options[0];
+    const safeSortOrder = TicketSortOrder.options.includes(
+      sortOrder as (typeof TicketSortOrder.options)[number]
+    )
+      ? sortOrder
+      : TicketSortOrder.options[1];
+
     updateParams({
-      sortBy: sortBy || TicketSortBy.options[0],
-      sortOrder: sortOrder || TicketSortOrder.options[1],
+      sortBy: safeSortBy,
+      sortOrder: safeSortOrder,
     });
   };
-
-  const combinedSortValue = `${searchParams.sortBy ?? "createdAt"}:${
-    searchParams.sortOrder ?? "desc"
-  }`;
 
   return (
     <div className="rounded-lg border px-4 py-3 grid gap-3 md:grid-cols-2 lg:grid-cols-4 items-center">
@@ -131,7 +152,7 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
         </SelectContent>
       </Select>
 
-      <Select defaultValue={combinedSortValue} onValueChange={handleSortChange}>
+      <Select value={combinedSortValue} onValueChange={handleSortChange}>
         <SelectTrigger>
           <SelectValue placeholder="Sort" />
         </SelectTrigger>

@@ -104,11 +104,8 @@ export default async function TicketsPage({ searchParams }: TicketsPageProps) {
       : "list";
   const projectLabels = Object.fromEntries(
     projects
-      .filter((project) => project.id)
-      .map((project) => [
-        project.id as string,
-        project.name || project.key || "Project",
-      ])
+      .filter((project) => project.id && project.key)
+      .map((project) => [project.id as string, project.key as string])
   );
 
   return (

@@ -33,28 +33,19 @@ export default function TicketCard({
         isCompact ? "p-3 space-y-2" : "p-4 space-y-3"
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1">
-          <h3
-            className={`font-semibold leading-tight line-clamp-1 ${
-              isCompact ? "text-sm" : "text-lg"
-            }`}
-          >
-            {ticket.title}
-          </h3>
-          {!isCompact && ticket.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {ticket.description}
-            </p>
-          )}
-        </div>
-        <span
-          className={`text-[11px] rounded-full px-2 py-1 font-medium ${
-            statusStyles[ticket.status]
+      <div className="space-y-1">
+        <h3
+          className={`font-semibold leading-tight line-clamp-1 ${
+            isCompact ? "text-sm" : "text-lg"
           }`}
         >
-          {ticket.status.replace("_", " ")}
-        </span>
+          {ticket.title}
+        </h3>
+        {!isCompact && ticket.description && (
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {ticket.description}
+          </p>
+        )}
       </div>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
