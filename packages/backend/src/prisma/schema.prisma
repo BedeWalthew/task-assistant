@@ -26,6 +26,7 @@ model Ticket {
   description String?
   status      String   @default("TODO") // Mapped from Zod TicketStatus
   priority    String   @default("MEDIUM") // Mapped from Zod TicketPriority
+  position    Int      @default(0)
   
   projectId   String
   project     Project  @relation(fields: [projectId], references: [id])
@@ -38,4 +39,8 @@ model Ticket {
   updatedAt   DateTime @updatedAt
 
   @@map("tickets")
+  @@index([status])
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([priority])
 }

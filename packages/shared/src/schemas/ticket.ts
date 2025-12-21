@@ -11,6 +11,7 @@ export const TicketSortBy = z.enum([
   "updatedAt",
   "priority",
   "status",
+  "position",
 ]);
 export type TicketSortBy = z.infer<typeof TicketSortBy>;
 
@@ -23,6 +24,7 @@ export const TicketSchema = z.object({
   description: z.string().optional(),
   status: TicketStatus.default("TODO"),
   priority: TicketPriority.default("MEDIUM"),
+  position: z.number().int().nonnegative().default(0),
   projectId: z.string().uuid(),
   assigneeId: z.string().optional(),
   source: z.string().default("MANUAL"), // JIRA, GITHUB, etc.
@@ -42,6 +44,12 @@ export type CreateTicketInput = z.infer<typeof CreateTicketSchema>;
 
 export const UpdateTicketSchema = TicketSchema.partial().omit({ id: true });
 export type UpdateTicketInput = z.infer<typeof UpdateTicketSchema>;
+
+export const MoveTicketSchema = z.object({
+  status: TicketStatus,
+  position: z.number().int().nonnegative(),
+});
+export type MoveTicketInput = z.infer<typeof MoveTicketSchema>;
 
 const numberFromQuery = (field: string, fallback: number, maxValue?: number) =>
   z

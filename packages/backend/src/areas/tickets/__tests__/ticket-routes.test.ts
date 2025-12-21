@@ -224,4 +224,90 @@ describe("Tickets API", () => {
       expect(response.status).toBe(404);
     });
   });
+
+  describe("POST /tickets/:id/move", () => {
+    let projectId: string;
+    let todoIds: string[];
+
+    beforeEach(async () => {
+      await prisma.ticket.deleteMany();
+      await prisma.project.deleteMany();
+      const project = await createProject();
+      projectId = project.id;
+
+      const created = await prisma.ticket.createMany({
+        data: [
+          { title: "A", projectId, status: "TODO", position: 0 },
+          { title: "B", projectId, status: "TODO", position: 1 },
+          { title: "C", projectId, status: "TODO", position: 2 },
+        ],
+      });
+
+      const all = await prisma.ticket.findMany({
+        where: { projectId },
+        orderBy: { createdAt: "asc" },
+      });
+      todoIds = all.map((t) => t.id);
+      expect(created.count).toBe(3);
+    });
+
+    it("reorders within a column", async () => {
+      const targetId = todoIds[2];
+
+      const response = await request(app)
+        .post(`/tickets/${targetId}/move`)
+        .send({ status: "TODO", position: 0 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.status).toBe("TODO");
+      expect(response.body.data.position).toBe(0);
+
+      const after = await request(app)
+        .get("/tickets")
+        .query({ status: "TODO", sortBy: "position", sortOrder: "asc" });
+
+      expect(after.status).toBe(200);
+      const ids = after.body.data.items.map((t: { id: string }) => t.id);
+      const positions = after.body.data.items.map(
+        (t: { position: number }) => t.position
+      );
+      expect(ids).toEqual([targetId, todoIds[0], todoIds[1]]);
+      expect(positions).toEqual([0, 1, 2]);
+    });
+
+    it("moves across columns and compacts positions", async () => {
+      const moveId = todoIds[0];
+
+      const response = await request(app)
+        .post(`/tickets/${moveId}/move`)
+        .send({ status: "IN_PROGRESS", position: 0 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.status).toBe("IN_PROGRESS");
+      expect(response.body.data.position).toBe(0);
+
+      const todo = await request(app)
+        .get("/tickets")
+        .query({ status: "TODO", sortBy: "position", sortOrder: "asc" });
+      const inProgress = await request(app)
+        .get("/tickets")
+        .query({ status: "IN_PROGRESS", sortBy: "position", sortOrder: "asc" });
+
+      expect(
+        todo.body.data.items.map((t: { position: number }) => t.position)
+      ).toEqual([0, 1]);
+      expect(
+        inProgress.body.data.items.map((t: { id: string }) => t.id)
+      ).toEqual([moveId]);
+      expect(inProgress.body.data.items[0].position).toBe(0);
+    });
+
+    it("returns 404 for unknown id", async () => {
+      const response = await request(app)
+        .post("/tickets/00000000-0000-0000-0000-000000000000/move")
+        .send({ status: "TODO", position: 0 });
+
+      expect(response.status).toBe(404);
+    });
+  });
 });

@@ -89,22 +89,29 @@ async function fetchTickets(
 }
 
 type TicketsPageProps = {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams:
+    | Record<string, string | string[] | undefined>
+    | Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function TicketsPage({ searchParams }: TicketsPageProps) {
-  const resolvedSearchParams = searchParams;
+  const resolvedSearchParams = await Promise.resolve(searchParams);
   const parsed = TicketFilterSchema.safeParse(toObject(resolvedSearchParams));
   const filters = parsed.success ? parsed.data : TicketFilterSchema.parse({});
   if (!parsed.success) {
     console.error("Invalid search parameters:", parsed.error);
   }
   const projects = await fetchProjects();
-  const result = await fetchTickets(filters);
   const view =
     (resolvedSearchParams.view?.toString().toLowerCase() ?? "list") === "board"
       ? "board"
       : "list";
+  const boardFilters: TicketFilterInput =
+    view === "board"
+      ? { ...filters, sortBy: "position", sortOrder: "asc" }
+      : filters;
+
+  const result = await fetchTickets(boardFilters);
   const projectLabels = Object.fromEntries(
     projects
       .filter((project) => project.id && project.key)

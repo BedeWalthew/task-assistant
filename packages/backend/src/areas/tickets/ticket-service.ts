@@ -6,6 +6,7 @@ import type {
   CreateTicketInput,
   TicketFilterInput,
   UpdateTicketInput,
+  MoveTicketInput,
 } from "@task-assistant/shared";
 import { AppError } from "../../common/utils/AppError";
 
@@ -22,7 +23,8 @@ export const getAll = async (filters: TicketFilterInput) => {
     limit,
   } = filters;
 
-  const safeSortBy = sortBy ?? "createdAt";
+  type SortField = TicketFilterInput["sortBy"];
+  const safeSortBy: SortField = sortBy ?? "createdAt";
   const safeSortOrder = sortOrder ?? "desc";
   const safeLimit = limit ?? 20;
   const safePage = page ?? 1;
@@ -109,10 +111,22 @@ export const getAll = async (filters: TicketFilterInput) => {
     };
   }
 
+  const isPositionSort = safeSortBy === "position";
+  const orderBy:
+    | Prisma.TicketOrderByWithRelationInput
+    | Prisma.TicketOrderByWithRelationInput[] = isPositionSort
+    ? ([
+        { status: "asc" },
+        { position: safeSortOrder as Prisma.SortOrder },
+      ] as unknown as Prisma.TicketOrderByWithRelationInput[])
+    : ({
+        [safeSortBy]: safeSortOrder,
+      } as unknown as Prisma.TicketOrderByWithRelationInput);
+
   const [items, total] = await Promise.all([
     prisma.ticket.findMany({
       where,
-      orderBy: { [safeSortBy]: safeSortOrder },
+      orderBy,
       skip,
       take: safeLimit,
     }),
@@ -141,8 +155,23 @@ export const getById = async (id: string) => {
 
 export const create = async (data: CreateTicketInput) => {
   try {
+    const status = data.status ?? "TODO";
+    const projectId = data.projectId;
+    const requestedPosition = data.position;
+
+    const [{ max }] = await prisma.$queryRaw<{ max: number | null }[]>`
+      SELECT MAX("position") as max
+      FROM "tickets"
+      WHERE status = ${status} AND "projectId" = ${projectId};
+    `;
+    const nextPosition = (max ?? -1) + 1;
+
     return await prisma.ticket.create({
-      data,
+      data: {
+        ...data,
+        status,
+        position: requestedPosition ?? nextPosition,
+      },
     });
   } catch (error: unknown) {
     if (error instanceof PrismaClientKnownRequestError) {
@@ -152,6 +181,85 @@ export const create = async (data: CreateTicketInput) => {
     }
     throw error;
   }
+};
+
+export const move = async (id: string, input: MoveTicketInput) => {
+  const { status: targetStatus, position: targetPosition } = input;
+
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+  });
+  if (!ticket) {
+    throw new AppError("Ticket not found", 404);
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const { status: currentStatus, projectId } = ticket;
+
+    if (currentStatus === targetStatus) {
+      const currentColumn = await tx.ticket.findMany({
+        where: { status: currentStatus, projectId },
+        orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+      });
+
+      const without = currentColumn.filter((t) => t.id !== id);
+      const insertAt = Math.max(0, Math.min(targetPosition, without.length));
+      const next = [...without];
+      const moving = currentColumn.find((t) => t.id === id)!;
+      next.splice(insertAt, 0, { ...moving, status: targetStatus });
+
+      await Promise.all(
+        next.map((t, idx) =>
+          tx.ticket.update({
+            where: { id: t.id },
+            data: { position: idx },
+          })
+        )
+      );
+
+      return { ...moving, status: targetStatus, position: insertAt };
+    }
+
+    const sourceColumn = await tx.ticket.findMany({
+      where: { status: currentStatus, projectId },
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    });
+    const targetColumnList = await tx.ticket.findMany({
+      where: { status: targetStatus, projectId },
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    });
+
+    const sourceRemaining = sourceColumn.filter((t) => t.id !== id);
+    await Promise.all(
+      sourceRemaining.map((t, idx) =>
+        tx.ticket.update({
+          where: { id: t.id },
+          data: { position: idx },
+        })
+      )
+    );
+
+    const insertAt = Math.max(
+      0,
+      Math.min(targetPosition, targetColumnList.length)
+    );
+    const targetNext = [...targetColumnList];
+    targetNext.splice(insertAt, 0, {
+      ...ticket,
+      status: targetStatus,
+    });
+
+    await Promise.all(
+      targetNext.map((t, idx) =>
+        tx.ticket.update({
+          where: { id: t.id },
+          data: { status: targetStatus, position: idx },
+        })
+      )
+    );
+
+    return { ...ticket, status: targetStatus, position: insertAt };
+  });
 };
 
 export const update = async (id: string, data: UpdateTicketInput) => {
