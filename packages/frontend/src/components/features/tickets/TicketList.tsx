@@ -1,73 +1,48 @@
 import { Ticket } from "@task-assistant/shared";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import TicketCard from "./TicketCard";
 
-const API_URL = process.env.INTERNAL_API_URL || "http://backend:3001";
+type TicketListProps = {
+  items: Ticket[];
+  total: number;
+  page: number;
+  pageSize: number;
+  projectLabels?: Record<string, string>;
+};
 
-type TicketsResult =
-  | { data: Ticket[]; error?: undefined }
-  | { data: []; error: string };
-
-async function getTickets(): Promise<TicketsResult> {
-  try {
-    const res = await fetch(`${API_URL}/tickets`, { cache: "no-store" });
-    if (!res.ok) {
-      throw new Error(`Failed to fetch tickets: ${res.statusText}`);
-    }
-    const json = await res.json();
-    return { data: json.data };
-  } catch (error) {
-    console.error(error);
-    return { data: [], error: "Unable to load tickets right now." };
-  }
-}
-
-export default async function TicketList() {
-  const result = await getTickets();
-  const tickets = result.data;
-
-  if (result.error) {
-    return (
-      <Alert variant="destructive">
-        <AlertTitle>Could not load tickets</AlertTitle>
-        <AlertDescription>{result.error}</AlertDescription>
-      </Alert>
-    );
-  }
-
-  if (tickets.length === 0) {
+export default function TicketList({
+  items,
+  total,
+  page,
+  pageSize,
+  projectLabels,
+}: TicketListProps) {
+  if (items.length === 0) {
     return (
       <div className="rounded-lg border p-6">
-        <p className="text-sm text-muted-foreground">No tickets yet.</p>
+        <p className="text-sm text-muted-foreground">
+          No tickets match these filters yet.
+        </p>
       </div>
     );
   }
 
+  const start = (page - 1) * pageSize + 1;
+  const end = Math.min(total, start + items.length - 1);
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {tickets.map((ticket) => (
-        <div
-          key={ticket.id}
-          className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow space-y-2"
-        >
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-lg line-clamp-1">
-              {ticket.title}
-            </h3>
-            <span className="text-xs rounded-full bg-secondary px-2 py-1 text-secondary-foreground">
-              {ticket.status}
-            </span>
-          </div>
-          {ticket.description && (
-            <p className="text-sm text-muted-foreground line-clamp-3">
-              {ticket.description}
-            </p>
-          )}
-          <div className="text-xs text-muted-foreground flex justify-between">
-            <span>Priority: {ticket.priority}</span>
-            <span>Project: {ticket.projectId.slice(0, 8)}…</span>
-          </div>
-        </div>
-      ))}
+    <div className="space-y-3">
+      <div className="text-xs text-muted-foreground">
+        Showing {start}–{end} of {total}
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {items.map((ticket) => (
+          <TicketCard
+            key={ticket.id}
+            ticket={ticket}
+            projectLabel={projectLabels?.[ticket.projectId]}
+          />
+        ))}
+      </div>
     </div>
   );
 }
