@@ -4,6 +4,7 @@ import Link from "next/link";
 type TicketCardProps = {
   ticket: Ticket;
   projectLabel?: string;
+  compact?: boolean;
 };
 
 const statusStyles: Record<Ticket["status"], string> = {
@@ -20,15 +21,28 @@ const priorityStyles: Record<Ticket["priority"], string> = {
   CRITICAL: "bg-red-100 text-red-700",
 };
 
-export default function TicketCard({ ticket, projectLabel }: TicketCardProps) {
+export default function TicketCard({
+  ticket,
+  projectLabel,
+  compact = false,
+}: TicketCardProps) {
+  const isCompact = compact;
   return (
-    <div className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow space-y-3 bg-card">
+    <div
+      className={`border rounded-lg shadow-sm hover:shadow-md transition-shadow bg-card ${
+        isCompact ? "p-3 space-y-2" : "p-4 space-y-3"
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1">
-          <h3 className="font-semibold text-lg leading-tight line-clamp-1">
+          <h3
+            className={`font-semibold leading-tight line-clamp-1 ${
+              isCompact ? "text-sm" : "text-lg"
+            }`}
+          >
             {ticket.title}
           </h3>
-          {ticket.description && (
+          {!isCompact && ticket.description && (
             <p className="text-sm text-muted-foreground line-clamp-2">
               {ticket.description}
             </p>
@@ -56,7 +70,7 @@ export default function TicketCard({ ticket, projectLabel }: TicketCardProps) {
         </span>
       </div>
 
-      {ticket.sourceUrl && (
+      {!isCompact && ticket.sourceUrl && (
         <Link
           href={ticket.sourceUrl}
           className="text-xs text-primary underline underline-offset-4"

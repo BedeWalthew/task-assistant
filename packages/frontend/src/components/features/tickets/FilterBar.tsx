@@ -26,6 +26,7 @@ type FilterBarProps = {
 const statusOptions = ["ANY", ...TicketStatus.options] as const;
 const priorityOptions = ["ANY", ...TicketPriority.options] as const;
 const projectOptions = ["ANY"] as const;
+const viewOptions = ["list", "board"] as const;
 
 export function FilterBar({ searchParams, projects }: FilterBarProps) {
   const router = useRouter();
@@ -143,7 +144,30 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
         </SelectContent>
       </Select>
 
-      <div className="md:col-span-2 lg:col-span-4 flex flex-wrap gap-2">
+      <div className="md:col-span-2 lg:col-span-4 flex flex-wrap gap-2 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+            View
+          </span>
+          <div className="inline-flex rounded-md border bg-card p-1">
+            {viewOptions.map((option) => {
+              const isActive =
+                (searchParams.view ?? "list").toLowerCase() === option;
+              return (
+                <Button
+                  key={option}
+                  size="sm"
+                  variant={isActive ? "secondary" : "ghost"}
+                  className="px-3"
+                  onClick={() => updateParams({ view: option })}
+                >
+                  {option === "list" ? "List" : "Board"}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
         <Button
           size="sm"
           variant="outline"
@@ -156,6 +180,7 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
               sortOrder: undefined,
               projectId: undefined,
               assigneeId: undefined,
+              view: undefined,
             })
           }
         >

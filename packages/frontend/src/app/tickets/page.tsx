@@ -9,6 +9,7 @@ import {
 } from "@task-assistant/shared";
 import { type Project } from "@task-assistant/shared/src/schemas/project";
 import TicketList from "@/components/features/tickets/TicketList";
+import { TicketBoard } from "@/components/features/tickets/TicketBoard";
 import { FilterBar } from "@/components/features/tickets/FilterBar";
 import { CreateTicketModal } from "@/components/features/tickets/CreateTicketModal";
 import { Button } from "@/components/ui/button";
@@ -97,6 +98,10 @@ export default async function TicketsPage({ searchParams }: TicketsPageProps) {
   const filters = parsed.success ? parsed.data : TicketFilterSchema.parse({});
   const projects = await fetchProjects();
   const result = await fetchTickets(filters);
+  const view =
+    (resolvedSearchParams.view?.toString().toLowerCase() ?? "list") === "board"
+      ? "board"
+      : "list";
   const projectLabels = Object.fromEntries(
     projects
       .filter((project) => project.id)
@@ -136,19 +141,28 @@ export default async function TicketsPage({ searchParams }: TicketsPageProps) {
         )}
         {result.data && (
           <div className="space-y-4">
-            <TicketList
-              items={result.data.items}
-              total={result.data.total}
-              page={result.data.page}
-              pageSize={result.data.pageSize}
-              projectLabels={projectLabels}
-            />
-            <Pagination
-              total={result.data.total}
-              page={result.data.page}
-              pageSize={result.data.pageSize}
-              searchParams={toObject(resolvedSearchParams)}
-            />
+            {view === "board" ? (
+              <TicketBoard
+                items={result.data.items}
+                projectLabels={projectLabels}
+              />
+            ) : (
+              <>
+                <TicketList
+                  items={result.data.items}
+                  total={result.data.total}
+                  page={result.data.page}
+                  pageSize={result.data.pageSize}
+                  projectLabels={projectLabels}
+                />
+                <Pagination
+                  total={result.data.total}
+                  page={result.data.page}
+                  pageSize={result.data.pageSize}
+                  searchParams={toObject(resolvedSearchParams)}
+                />
+              </>
+            )}
           </div>
         )}
       </Suspense>
