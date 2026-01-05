@@ -1,6 +1,35 @@
+# Dev stage - used by docker-compose.yml for development
+FROM node:18-alpine AS dev
+
+RUN apk add --no-cache libc6-compat openssl
+RUN npm install -g pnpm
+
+WORKDIR /app
+
+# Copy root workspace files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy package.json files for all packages
+COPY packages/backend/package.json ./packages/backend/
+COPY packages/frontend/package.json ./packages/frontend/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code for shared package and backend (needed for prisma generate)
+COPY packages/shared ./packages/shared
+COPY packages/backend ./packages/backend
+
+# Build shared package
+RUN pnpm --filter @task-assistant/shared build
+
+# Generate Prisma Client
+RUN pnpm --filter @task-assistant/backend exec prisma generate --schema=src/prisma/schema.prisma
+
+# Production builder stage
 FROM node:18-alpine AS builder
 
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
 RUN apk add --no-cache libc6-compat
 RUN npm install -g pnpm
 

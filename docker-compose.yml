@@ -18,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: packages/backend/Dockerfile
+      target: dev
     command: pnpm --filter @task-assistant/backend dev
     user: root
     environment:
@@ -30,6 +31,9 @@ services:
     volumes:
       - ./packages/backend:/app/packages/backend
       - ./packages/shared:/app/packages/shared
+      - /app/node_modules
+      - /app/packages/backend/node_modules
+      - /app/packages/shared/node_modules
     depends_on:
       - postgres
     networks:
@@ -39,6 +43,7 @@ services:
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
+      target: dev
     command: pnpm --filter @task-assistant/frontend dev
     user: root
     environment:
@@ -52,6 +57,9 @@ services:
     volumes:
       - ./packages/frontend:/app/packages/frontend
       - ./packages/shared:/app/packages/shared
+      - /app/node_modules
+      - /app/packages/frontend/node_modules
+      - /app/packages/shared/node_modules
     depends_on:
       - backend
     networks:

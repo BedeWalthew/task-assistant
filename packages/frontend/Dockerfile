@@ -1,5 +1,29 @@
+# Dev stage - used by docker-compose.yml for development
+FROM node:22-slim AS dev
+RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/* \
+  && npm install -g pnpm
+
+WORKDIR /app
+
+# Copy root workspace files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# Copy package.json files for all packages
+COPY packages/backend/package.json ./packages/backend/
+COPY packages/frontend/package.json ./packages/frontend/
+COPY packages/shared/package.json ./packages/shared/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code for shared package (needed for build)
+COPY packages/shared ./packages/shared
+
+# Build shared package
+RUN pnpm --filter @task-assistant/shared build
+
+# Production builder stage
 FROM node:22-slim AS builder
-# Install pnpm; slim images use apt instead of apk
 RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/* \
   && npm install -g pnpm
 

@@ -89,11 +89,11 @@ async function fetchTickets(
 }
 
 type TicketsPageProps = {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function TicketsPage({ searchParams }: TicketsPageProps) {
-  const resolvedSearchParams = searchParams;
+export default async function TicketsPage(props: TicketsPageProps) {
+  const resolvedSearchParams = await props.searchParams;
   const parsed = TicketFilterSchema.safeParse(toObject(resolvedSearchParams));
   const filters = parsed.success ? parsed.data : TicketFilterSchema.parse({});
   if (!parsed.success) {
