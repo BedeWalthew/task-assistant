@@ -25,12 +25,14 @@ export function useTicketReorder() {
   return useMutation({
     mutationFn: reorderTicketApi,
     onMutate: async (input) => {
+      // Cancel any outgoing refetches to prevent overwriting optimistic update
       await queryClient.cancelQueries({ queryKey: ["tickets"] });
 
       const previousTickets = queryClient.getQueryData<{ items: Ticket[] }>([
         "tickets",
       ]);
 
+      // Optimistically update the cache
       queryClient.setQueryData<{ items: Ticket[] }>(["tickets"], (old) => {
         if (!old) return old;
         return {
@@ -45,14 +47,25 @@ export function useTicketReorder() {
 
       return { previousTickets };
     },
+    onSuccess: (updatedTicket) => {
+      // Update cache with the actual server response (no refetch needed)
+      queryClient.setQueryData<{ items: Ticket[] }>(["tickets"], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          items: old.items.map((t) =>
+            t.id === updatedTicket.id ? updatedTicket : t
+          ),
+        };
+      });
+    },
     onError: (_err, _input, context) => {
+      // Rollback to previous state on error
       if (context?.previousTickets) {
         queryClient.setQueryData(["tickets"], context.previousTickets);
       }
       toast.error("Failed to move ticket. Please try again.");
     },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tickets"] });
-    },
+    // No onSettled invalidation - we update directly in onSuccess
   });
 }
