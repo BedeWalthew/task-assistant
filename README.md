@@ -1,13 +1,38 @@
 # Task Assistant
 
-A unified task management system with an AI Agent, fully containerized with Docker.
+A unified task management system with Kanban board, drag-and-drop reordering, and AI Agent integration (planned). Fully containerized with Docker.
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Frontend** | Next.js 16, React 19, TypeScript |
+| **UI** | shadcn/ui, Tailwind CSS, Radix UI |
+| **State** | TanStack Query, URL params |
+| **Drag-Drop** | @dnd-kit |
+| **Backend** | Express.js, TypeScript |
+| **Database** | PostgreSQL, Prisma ORM |
+| **Validation** | Zod (shared schemas) |
+| **Testing** | Jest, Playwright |
+| **DevOps** | Docker, pnpm workspaces |
+
+## Features
+
+- ✅ **Project Management**: Create, edit, delete projects with unique keys
+- ✅ **Ticket CRUD**: Full ticket lifecycle management
+- ✅ **Kanban Board**: Visual status columns with drag-and-drop
+- ✅ **Filtering & Sorting**: URL-driven filters (status, priority, project, search)
+- ✅ **Optimistic Updates**: Instant UI feedback with server sync
+- ✅ **API Documentation**: Swagger/OpenAPI at `/api-docs`
+- 🔜 **Authentication**: OAuth with NextAuth.js (planned)
+- 🔜 **AI Agent**: Natural language task creation (planned)
 
 ## Quick Start
 
 ### 1. Prerequisites
 
 - Docker & Docker Compose
-- Node.js & pnpm (optional, but recommended for scripts)
+- Node.js 20+ & pnpm (optional, for scripts)
 
 ### 2. Configuration
 
@@ -47,11 +72,7 @@ pnpm docker:db:migrate
 
 # Reset Database
 pnpm docker:db:reset
-```
 
-**Seeding & Studio:**
-
-```bash
 # Seed Database
 pnpm docker:db:seed
 
@@ -59,31 +80,43 @@ pnpm docker:db:seed
 pnpm docker:db:studio
 ```
 
+## Testing
+
+```bash
+# Backend integration tests
+pnpm test
+
+# E2E tests (Playwright)
+pnpm test:e2e
+
+# E2E with UI
+pnpm test:e2e:ui
+```
+
 ## Production
 
-To run the optimized production build (no source mounting, non-root user):
+To run the optimized production build:
 
 ```bash
 pnpm docker:prod
 ```
 
-## Useful Commands
+## Project Structure
 
-- `pnpm docker:dev`: Start dev environment (build + detach)
-- `pnpm docker:prod`: Start production environment
-- `pnpm docker:up`: Start existing containers
-- `pnpm docker:down`: Stop and remove containers
-- `pnpm docker:build`: Rebuild images
+```
+task-assistant/
+├── packages/
+│   ├── frontend/     # Next.js 16 + React 19
+│   ├── backend/      # Express.js + Prisma
+│   └── shared/       # Zod schemas, types
+├── docs/             # Technical documentation
+├── docker-compose.yml
+└── pnpm-workspace.yaml
+```
 
 ## Documentation
 
 - [Backend Documentation](packages/backend/README.md)
 - [Frontend Documentation](packages/frontend/README.md)
 - [Shared Package Documentation](packages/shared/README.md)
-
-## Highlights (current sprint)
-
-- Ticket filtering & sorting (URL-driven, server-rendered)
-- Kanban board view for tickets (status columns, compact cards)
-- Shadcn dialog-based ticket creation modal
-- Project keys displayed on ticket cards/board
+- [Development Roadmap](TODO.md)

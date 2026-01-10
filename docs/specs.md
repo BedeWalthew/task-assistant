@@ -1,53 +1,87 @@
 # Project Specifications: Personal Planner + Task Agent
 
+> **Last Updated:** 2026-01-10  
+> **Status:** Phase 2 Complete, Phase 3 (Authentication) Next
+
 ## Overview
-A personal planner and task management system that aggregates tasks from multiple sources (GitHub Actions, Jira, Notion) into a unified view. The system features a Google SDK-powered AI agent for natural language interaction, enabling voice-controlled task and project management.
+
+A personal planner and task management system that aggregates tasks from multiple sources (GitHub Actions, Jira, Notion) into a unified view. The system features a Kanban board with drag-and-drop reordering, and will include a Google SDK-powered AI agent for natural language interaction.
+
+## Current Implementation Status
+
+### ✅ Completed Features
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Project CRUD | ✅ Complete | Create, read, update, delete with unique keys |
+| Ticket CRUD | ✅ Complete | Full lifecycle with validation |
+| Kanban Board | ✅ Complete | 4 status columns with drag-and-drop |
+| Filtering/Sorting | ✅ Complete | URL-driven, server-rendered |
+| Reorder API | ✅ Complete | Fractional positioning with optimistic updates |
+| API Documentation | ✅ Complete | Swagger/OpenAPI at /api-docs |
+| E2E Tests | ✅ Complete | Playwright test suites |
+
+### 🔜 Planned Features
+
+| Feature | Phase | Priority |
+|---------|-------|----------|
+| Authentication | Phase 3 | High |
+| External Integrations | Phase 4 | Medium |
+| AI Agent | Phase 4 | Medium |
+| Real-time Updates | Phase 5 | Low |
 
 ## Core Features
 
 ### 1. Unified Task Management
-- **Centralized Database**: Stores all tickets/tasks in a unified format.
-- **Integrations**:
-  - GitHub Actions
-  - Jira Tickets
-  - Notion (Potential)
-  - Custom/Manual Ticket Creation
-- **Frontend Application**: Displays a combined view of all tickets from connected sources.
-- **Synchronization**: Two-way sync (or at least import) to keep the personal planner updated with external sources.
 
-### 2. AI Agent (Google SDK)
-- **Natural Language Processing**:
-  - Input: Voice (Microphone) and Text.
-  - Function: Translates natural language requests into structural changes (Workspaces, Projects, Tickets).
-- **Hierarchy Management**:
-  - **Workspace** (Highest Level)
-  - **Project**
-  - **Ticket** (Lowest Level)
-- **Intelligent Routing**:
-  - The agent analyzes requests to determine the appropriate context.
-  - *Example*: "Create a new task for X" -> Agent asks to confirm placement in existing "Project X" or suggests creating a new project if no match is found.
+- **Centralized Database**: Stores all tickets/tasks in a unified format
+- **Kanban Board**: Visual status management with drag-and-drop
+- **Filtering**: Filter by project, status, priority, search term
+- **Pagination**: Server-side pagination with URL state
+
+### 2. Planned Integrations
+
+- GitHub Actions
+- Jira Tickets
+- Notion (Potential)
+- Custom/Manual Ticket Creation
+
+### 3. AI Agent (Planned - Phase 4)
+
+- **Natural Language Processing**: Voice and text input
+- **Hierarchy Management**: Workspace → Project → Ticket
+- **Intelligent Routing**: Context-aware task creation
 
 ## Data Structure
 
-### Unified Ticket Format (JSON)
-*To be defined. The goal is a standard JSON structure that maps fields from Jira, GitHub, etc., to a common schema.*
+### Ticket Schema (Current Implementation)
 
 ```json
 {
-  "id": "TICKET-123",                 // Required: Unique identifier
+  "id": "uuid",                       // Auto-generated UUID
   "title": "Implement Login Flow",    // Required: Short summary
   "description": "...",               // Optional: Detailed description
-  "status": "To Do",                  // Required: e.g., 'To Do', 'In Progress', 'Done'
-  "priority": "High",                 // Optional: e.g., 'Low', 'Medium', 'High', 'Critical'
-  "dueDate": "2023-12-31T23:59:59Z",  // Optional: ISO 8601 format
-  "project": "Frontend App",          // Required: Project name or ID
-  "tags": ["auth", "frontend"],       // Optional: List of tags
-  "blockedBy": ["TICKET-100"],        // Optional: List of ticket IDs that block this one
-  "sprint": "Sprint 4",               // Optional: Sprint identifier
-  "assignee": "user@example.com",     // Optional: User assigned to the task
-  "source": "Jira",                   // Required: Origin (Jira, GitHub, Manual, Notion)
-  "sourceUrl": "https://...",         // Optional: Link to the original source
-  "createdAt": "2023-10-01T10:00:00Z",// Required: Creation timestamp
-  "updatedAt": "2023-10-05T15:30:00Z" // Required: Last update timestamp
+  "status": "TODO",                   // Required: TODO, IN_PROGRESS, DONE, BLOCKED
+  "priority": "MEDIUM",               // Required: LOW, MEDIUM, HIGH, CRITICAL
+  "position": 1.5,                    // Float: Ordering within status column
+  "projectId": "uuid",                // Required: Parent project reference
+  "assigneeId": "uuid",               // Optional: Assigned user
+  "source": "MANUAL",                 // Required: MANUAL, JIRA, GITHUB
+  "sourceUrl": "https://...",         // Optional: Link to external source
+  "createdAt": "2026-01-10T10:00:00Z",// Auto-generated timestamp
+  "updatedAt": "2026-01-10T15:30:00Z" // Auto-updated timestamp
+}
+```
+
+### Project Schema
+
+```json
+{
+  "id": "uuid",                       // Auto-generated UUID
+  "name": "Frontend App",             // Required: Project name
+  "description": "...",               // Optional: Description
+  "key": "FRONT",                     // Required: Unique 2-10 char code
+  "createdAt": "2026-01-01T10:00:00Z",
+  "updatedAt": "2026-01-10T15:30:00Z"
 }
 ```

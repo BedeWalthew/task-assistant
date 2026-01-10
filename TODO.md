@@ -1,7 +1,7 @@
 # Task Assistant - Development Roadmap
 
-> **Last Updated:** 2025-12-21  
-> **Current Focus:** Ticket filtering, board view polish, and project/ticket UX
+> **Last Updated:** 2026-01-10  
+> **Current Focus:** Drag-and-drop polish, authentication, and CI/CD
 
 ---
 
@@ -9,39 +9,52 @@
 
 ### Infrastructure & DevOps
 
-- [x] Docker Compose setup (dev + production)
+- [x] Docker Compose setup (dev + production + test)
 - [x] Monorepo structure with pnpm workspaces
 - [x] PostgreSQL database container
 - [x] Hot reload for backend & frontend in Docker
 - [x] Database migration scripts via Prisma
 - [x] GitHub PR agent (Qodo Merge) integration
+- [x] Test database configuration for Docker
 
 ### Backend
 
-- [x] Express.js API setup
-- [x] Prisma ORM configuration
-- [x] Basic project routes (`GET /projects`)
-- [x] Jest testing framework
-- [x] Test coverage for project routes
-  - [x] List all projects
-  - [x] Verify response structure
-  - [x] Handle empty data
-  - [x] 404 handling
+- [x] Express.js API setup with TypeScript
+- [x] Prisma ORM configuration with PostgreSQL
+- [x] Full Project CRUD (`GET`, `POST`, `PUT`, `DELETE /projects`)
+- [x] Full Ticket CRUD (`GET`, `POST`, `PUT`, `DELETE /tickets`)
+- [x] Ticket filtering & sorting endpoints with pagination
+- [x] Ticket reorder endpoint (`PATCH /tickets/:id/reorder`)
+- [x] Jest testing framework with Supertest
 - [x] API documentation (Swagger/OpenAPI)
+- [x] Zod validation middleware
+- [x] Position field for ticket ordering with DB indexes
 
 ### Frontend
 
-- [x] Next.js application setup
-- [x] shadcn/ui component library
-- [x] Basic project listing page
-- [x] Ticket list with filters/sorting (URL-driven)
-- [x] Kanban-style ticket board view (status columns, compact cards)
-- [x] Ticket creation modal using shadcn dialog
-- [x] Project key shown on ticket cards/board
+- [x] Next.js 16 with React 19
+- [x] shadcn/ui component library (Radix UI + Tailwind)
+- [x] TanStack Query for client state management
+- [x] Server Components with Server Actions
+- [x] Project creation form and list
+- [x] Project detail page
+- [x] Ticket list view with URL-driven filters/sorting
+- [x] Ticket creation modal (shadcn dialog + react-hook-form)
+- [x] Kanban board view (4 status columns)
+- [x] Drag-and-drop with @dnd-kit (within/across columns)
+- [x] Optimistic updates for drag operations
+- [x] Filter bar (status, priority, project, search, sort)
+- [x] Toast notifications (sonner)
 
 ### Testing & Quality
 
-- [x] Add test database configuration for Docker
+- [x] Backend: Jest integration tests for all CRUD
+- [x] E2E: Playwright test suites configured
+- [x] E2E: Navigation tests
+- [x] E2E: Project CRUD tests
+- [x] E2E: Ticket CRUD tests
+- [x] E2E: Filtering tests
+- [x] E2E: Kanban drag-and-drop tests
 - [ ] CI/CD pipeline for automated testing
 - [ ] Test coverage reporting
 
@@ -49,62 +62,41 @@
 
 ## 📋 Next Up (Priority Order)
 
-### Phase 1: Complete Core CRUD Operations
+### Phase 2.5: Polish & UX Improvements (Current)
 
-1. **Projects**
+1. **Kanban Board Polish**
+   - [ ] Quick-add ticket per column (inline form)
+   - [ ] Horizontal scroll on mobile
+   - [ ] ARIA improvements for screen readers
+   - [ ] Keyboard navigation for drag-and-drop
 
-   - [x] `POST /projects` - Create project
-   - [x] `GET /projects/:id` - Get single project
-   - [x] `PUT /projects/:id` - Update project
-   - [x] `DELETE /projects/:id` - Delete project
-   - [x] Tests for all CRUD operations
+2. **Performance Optimization**
+   - [ ] Add missing DB indexes (assigneeId)
+   - [ ] Implement connection pooling
+   - [ ] Add request caching headers
 
-2. **Tickets**
-   - [x] Define ticket routes
-   - [x] Implement ticket CRUD operations
-   - [x] Add ticket-project relationships
-   - [x] Test ticket operations
-
-### Phase 2: Frontend Integration
-
-- [x] Project creation form (baseline UI)
-- [x] Project detail page (baseline UI)
-- [x] Ticket creation UI (baseline)
-- [x] Ticket list (baseline)
-- [x] Ticket filtering + sorting (URL-driven, server-fetched)
-- [x] Board-style view for tickets (Kanban, grouped by status)
-
-#### Phase 2 Detail
-
-- Ticket filtering
-
-  - [x] Shared schema: `TicketFilterSchema` (`projectId`, `status`, `priority`, `assigneeId`, `search`, `sort`, `page`, `limit`) in `packages/shared`
-  - [x] Backend: validate query, map to Prisma `where/orderBy`, paginate `{items, total, page, pageSize}`
-  - [x] Tests: service combinations + route integration (200 + 400 on invalid)
-  - [x] Frontend: URL-driven filters (query params), server component data load, client filter bar (shadcn Select/Input/Tabs), empty/loading states
-  - [ ] Performance: add DB indexes (status, projectId, assigneeId, priority), safe page-size defaults
-
-- Board-style views
-  - [x] Data model: status field present; grouped rendering by status
-  - [ ] Optional: add `position` for ordering + migration
-  - [ ] Backend write: update endpoint payload `{status, position}` (or bulk reorder) with Zod validation
-  - [ ] Tests: reorder logic + move-between-column integration
-  - [x] Frontend: Kanban view (server-loaded data) with URL-driven filters, compact cards, column counts
-  - [ ] UX: drag-and-drop (`@dnd-kit`) with optimistic moves, quick-add per column, horizontal scroll on mobile, ARIA for draggable items
+3. **Developer Experience**
+   - [ ] CI/CD pipeline (GitHub Actions)
+   - [ ] Test coverage reporting
+   - [ ] ESLint/Prettier configuration
+   - [ ] Pre-commit hooks (Husky)
 
 ### Phase 3: Authentication
 
 - [ ] NextAuth.js setup
 - [ ] OAuth providers (Google, GitHub)
 - [ ] Session management with Prisma
-- [ ] Protected routes
+- [ ] Protected routes (frontend)
+- [ ] Protected endpoints (backend)
+- [ ] User model and relations
 
 ### Phase 4: AI Agent Integration
 
-- [ ] Python agent setup
+- [ ] Python agent setup (or Node.js alternative)
 - [ ] Google Gen AI SDK integration
 - [ ] Agent API endpoints
-- [ ] Agent-task interaction
+- [ ] Natural language task creation
+- [ ] Agent-ticket interaction
 
 ---
 
@@ -117,19 +109,22 @@
 - [ ] File attachments
 - [ ] Comments on tickets
 - [ ] Activity timeline
+- [ ] Multi-select drag (multiple tickets)
+- [ ] Undo/redo functionality
 
 ### DevOps
 
-- [ ] Production deployment strategy
-- [ ] CI/CD automation
+- [ ] Production deployment strategy (Vercel/Railway)
+- [ ] CI/CD automation (GitHub Actions)
 - [ ] Performance monitoring
-- [ ] Error tracking (Sentry?)
+- [ ] Error tracking (Sentry)
 
 ### Quality
 
-- [ ] E2E tests (Playwright)
-- [ ] Frontend component tests
+- [ ] E2E test coverage metrics
+- [ ] Frontend component tests (Vitest/RTL)
 - [ ] Performance benchmarks
+- [ ] Accessibility audit (axe-core)
 
 ---
 
@@ -137,11 +132,13 @@
 
 ### Architecture Decisions
 
-- **Monorepo:** Using pnpm workspaces (`packages/frontend`, `packages/backend`, `packages/shared`)
+- **Monorepo:** pnpm workspaces (`packages/frontend`, `packages/backend`, `packages/shared`)
 - **Database:** PostgreSQL with Prisma ORM
-- **Frontend:** Next.js 14+ with Server Components (minimize client-side state)
-- **Testing:** Jest for backend, focus on integration tests
-- **Validation:** Zod schemas in `packages/shared` for type safety across stack
+- **Frontend:** Next.js 16 with React 19, Server Components by default
+- **State:** TanStack Query for client state, URL params for filter state
+- **Drag-Drop:** @dnd-kit with fractional positioning (Float column)
+- **Testing:** Jest (backend), Playwright (E2E)
+- **Validation:** Zod schemas in `packages/shared` for full-stack type safety
 
 ### Current Blockers
 
@@ -149,19 +146,21 @@
 
 ### Technical Debt
 
-- Consider adding ESLint/Prettier configuration
-- Set up pre-commit hooks (Husky)
-- Add database seeding for development
+- [ ] ESLint/Prettier configuration
+- [ ] Pre-commit hooks (Husky)
+- [ ] More comprehensive error boundaries
+- [ ] Loading skeletons for all views
 
 ---
 
 ## 🎯 Current Sprint Goal
 
-**Goal:** Complete backend CRUD operations for Projects and Tickets with full test coverage
+**Goal:** Implement authentication and CI/CD pipeline
 
 **Definition of Done:**
 
-- All CRUD endpoints implemented and tested
-- Frontend can create/read/update/delete projects
-- Test coverage > 80%
+- Users can sign in with Google/GitHub OAuth
+- Protected routes require authentication
+- GitHub Actions runs tests on PR
+- Test coverage reports generated
 - Documentation updated
