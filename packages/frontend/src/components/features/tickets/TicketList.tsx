@@ -30,8 +30,8 @@ export default function TicketList({
   const end = Math.min(total, start + items.length - 1);
 
   return (
-    <div className="space-y-3">
-      <div className="text-xs text-muted-foreground">
+    <div className="space-y-3" data-testid="ticket-list">
+      <div className="text-xs text-muted-foreground" data-testid="ticket-list-info">
         Showing {start}–{end} of {total}
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

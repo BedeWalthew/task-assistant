@@ -4,12 +4,12 @@ import Link from "next/link";
 import { Suspense } from "react";
 import {
   TicketFilterSchema,
+  type Project,
   type Ticket,
   type TicketFilterInput,
 } from "@task-assistant/shared";
-import { type Project } from "@task-assistant/shared/src/schemas/project";
 import TicketList from "@/components/features/tickets/TicketList";
-import { TicketBoard } from "@/components/features/tickets/TicketBoard";
+import { TicketBoardWrapper } from "@/components/features/tickets/TicketBoardWrapper";
 import { FilterBar } from "@/components/features/tickets/FilterBar";
 import { CreateTicketModal } from "@/components/features/tickets/CreateTicketModal";
 import { Button } from "@/components/ui/button";
@@ -120,7 +120,7 @@ export default async function TicketsPage(props: TicketsPageProps) {
             Create and browse tickets across projects.
           </p>
         </div>
-        <CreateTicketModal />
+        <CreateTicketModal projects={projects} />
       </div>
 
       <Suspense
@@ -142,9 +142,10 @@ export default async function TicketsPage(props: TicketsPageProps) {
         {result.data && (
           <div className="space-y-4">
             {view === "board" ? (
-              <TicketBoard
+              <TicketBoardWrapper
                 items={result.data.items}
                 projectLabels={projectLabels}
+                searchParams={toObject(resolvedSearchParams)}
               />
             ) : (
               <>
@@ -186,12 +187,12 @@ function Pagination({ total, page, pageSize, searchParams }: PaginationProps) {
   };
 
   return (
-    <div className="flex items-center justify-between gap-3 border rounded-lg px-4 py-3">
-      <div className="text-sm text-muted-foreground">
+    <div className="flex items-center justify-between gap-3 border rounded-lg px-4 py-3" data-testid="pagination">
+      <div className="text-sm text-muted-foreground" data-testid="pagination-info">
         Page {page} of {totalPages} • {total} tickets
       </div>
       <div className="flex gap-2">
-        <Button asChild variant="outline" size="sm" disabled={page <= 1}>
+        <Button asChild variant="outline" size="sm" disabled={page <= 1} data-testid="pagination-prev">
           <Link href={buildHref(Math.max(1, page - 1))}>Previous</Link>
         </Button>
         <Button
@@ -199,6 +200,7 @@ function Pagination({ total, page, pageSize, searchParams }: PaginationProps) {
           variant="outline"
           size="sm"
           disabled={page >= totalPages}
+          data-testid="pagination-next"
         >
           <Link href={buildHref(Math.min(totalPages, page + 1))}>Next</Link>
         </Button>

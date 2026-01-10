@@ -6,8 +6,8 @@ import {
   TicketSortBy,
   TicketSortOrder,
   TicketStatus,
+  type Project,
 } from "@task-assistant/shared";
-import { type Project } from "@task-assistant/shared/src/schemas/project";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -32,6 +32,10 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const current = useSearchParams();
+
+  // Determine current view
+  const currentView = (searchParams.view ?? "list").toLowerCase() === "board" ? "board" : "list";
+  const isBoardView = currentView === "board";
 
   const updateParams = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(current?.toString() ?? "");
@@ -81,13 +85,14 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
   };
 
   return (
-    <div className="rounded-lg border px-4 py-3 grid gap-3 md:grid-cols-2 lg:grid-cols-4 items-center">
+    <div className="rounded-lg border px-4 py-3 grid gap-3 md:grid-cols-2 lg:grid-cols-4 items-center" data-testid="filter-bar">
       <Input
         placeholder="Search title or description"
         defaultValue={searchParams.search ?? ""}
         onChange={(event) =>
           updateParams({ search: event.target.value.trim() || undefined })
         }
+        data-testid="filter-search"
       />
 
       <Select
@@ -96,7 +101,7 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
           updateParams({ projectId: value === "ANY" ? undefined : value })
         }
       >
-        <SelectTrigger>
+        <SelectTrigger data-testid="filter-project">
           <SelectValue placeholder="Project" />
         </SelectTrigger>
         <SelectContent>
@@ -116,23 +121,26 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
         </SelectContent>
       </Select>
 
-      <Select
-        defaultValue={searchParams.status ?? "ANY"}
-        onValueChange={(value) =>
-          updateParams({ status: value === "ANY" ? undefined : value })
-        }
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          {statusOptions.map((status) => (
-            <SelectItem key={status} value={status}>
-              {status === "ANY" ? "Any status" : status.replace("_", " ")}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Status filter hidden in board view - board already groups by status */}
+      {!isBoardView && (
+        <Select
+          defaultValue={searchParams.status ?? "ANY"}
+          onValueChange={(value) =>
+            updateParams({ status: value === "ANY" ? undefined : value })
+          }
+        >
+          <SelectTrigger data-testid="filter-status">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {statusOptions.map((status) => (
+              <SelectItem key={status} value={status}>
+                {status === "ANY" ? "Any status" : status.replace("_", " ")}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <Select
         defaultValue={searchParams.priority ?? "ANY"}
@@ -140,7 +148,7 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
           updateParams({ priority: value === "ANY" ? undefined : value })
         }
       >
-        <SelectTrigger>
+        <SelectTrigger data-testid="filter-priority">
           <SelectValue placeholder="Priority" />
         </SelectTrigger>
         <SelectContent>
@@ -153,7 +161,7 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
       </Select>
 
       <Select value={combinedSortValue} onValueChange={handleSortChange}>
-        <SelectTrigger>
+        <SelectTrigger data-testid="filter-sort">
           <SelectValue placeholder="Sort" />
         </SelectTrigger>
         <SelectContent>
@@ -170,7 +178,7 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
           <span className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
             View
           </span>
-          <div className="inline-flex rounded-md border bg-card p-1">
+          <div className="inline-flex rounded-md border bg-card p-1" data-testid="view-toggle">
             {viewOptions.map((option) => {
               const isActive =
                 (searchParams.view ?? "list").toLowerCase() === option;
@@ -181,6 +189,7 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
                   variant={isActive ? "secondary" : "ghost"}
                   className="px-3"
                   onClick={() => updateParams({ view: option })}
+                  data-testid={`view-toggle-${option}`}
                 >
                   {option === "list" ? "List" : "Board"}
                 </Button>
@@ -204,6 +213,7 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
               view: undefined,
             })
           }
+          data-testid="clear-filters"
         >
           Clear filters
         </Button>

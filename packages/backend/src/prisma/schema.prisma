@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
@@ -21,21 +21,23 @@ model Project {
 }
 
 model Ticket {
-  id          String   @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String?
-  status      String   @default("TODO") // Mapped from Zod TicketStatus
-  priority    String   @default("MEDIUM") // Mapped from Zod TicketPriority
-  
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id])
-  
-  assigneeId  String?
-  source      String   @default("MANUAL") // JIRA, GITHUB, MANUAL
-  sourceUrl   String?
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  status      String  @default("TODO") // Mapped from Zod TicketStatus
+  priority    String  @default("MEDIUM") // Mapped from Zod TicketPriority
+  position    Float   @default(0) // Ordering within status column
 
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+
+  assigneeId String?
+  source     String  @default("MANUAL") // JIRA, GITHUB, MANUAL
+  sourceUrl  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, status, position])
   @@map("tickets")
 }

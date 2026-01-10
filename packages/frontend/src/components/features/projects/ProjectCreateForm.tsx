@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   CreateProjectInput,
   CreateProjectSchema,
-} from "@task-assistant/shared/src/schemas/project";
+} from "@task-assistant/shared";
 import { createProject } from "@/actions/createProject";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,7 +50,7 @@ export function ProjectCreateForm() {
   };
 
   return (
-    <Card className="max-w-xl">
+    <Card className="max-w-xl" data-testid="project-create-form">
       <CardHeader>
         <CardTitle>Create Project</CardTitle>
       </CardHeader>
@@ -64,7 +64,7 @@ export function ProjectCreateForm() {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Project Name" {...field} />
+                    <Input placeholder="Project Name" {...field} data-testid="project-name-input" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -78,7 +78,7 @@ export function ProjectCreateForm() {
                 <FormItem>
                   <FormLabel>Key</FormLabel>
                   <FormControl>
-                    <Input placeholder="PROJ" maxLength={10} {...field} />
+                    <Input placeholder="PROJ" maxLength={10} {...field} data-testid="project-key-input" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -96,6 +96,7 @@ export function ProjectCreateForm() {
                       placeholder="Optional description"
                       className="resize-none"
                       {...field}
+                      data-testid="project-desc-input"
                     />
                   </FormControl>
                   <FormMessage />
@@ -104,12 +105,12 @@ export function ProjectCreateForm() {
             />
 
             {error && (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-sm text-destructive" role="alert" data-testid="project-form-error">
                 {error}
               </p>
             )}
 
-            <Button type="submit" disabled={isPending}>
+            <Button type="submit" disabled={isPending} data-testid="project-submit-btn">
               {isPending ? "Creating..." : "Create Project"}
             </Button>
           </form>

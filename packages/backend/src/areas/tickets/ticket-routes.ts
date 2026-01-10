@@ -7,6 +7,7 @@ import {
   UpdateTicketSchema,
   TicketSchema,
   TicketFilterSchema,
+  ReorderTicketSchema,
 } from "@task-assistant/shared";
 
 export const ticketsRouter = Router();
@@ -249,4 +250,57 @@ ticketsRouter.delete(
   "/:id",
   validate(z.object({ params: z.object({ id: z.string().uuid() }) })),
   TicketController.deleteTicket
+);
+
+/**
+ * @swagger
+ * /tickets/{id}/reorder:
+ *   patch:
+ *     summary: Reorder a ticket (drag-drop)
+ *     tags: [Tickets]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - position
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"]
+ *               position:
+ *                 type: number
+ *               referenceTicketId:
+ *                 type: string
+ *                 format: uuid
+ *     responses:
+ *       200:
+ *         description: Ticket reordered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Ticket'
+ *       404:
+ *         description: Ticket not found
+ *       409:
+ *         description: Position conflict
+ */
+ticketsRouter.patch(
+  "/:id/reorder",
+  validate(
+    z.object({
+      params: z.object({ id: z.string().uuid() }),
+      body: ReorderTicketSchema,
+    })
+  ),
+  TicketController.reorder
 );

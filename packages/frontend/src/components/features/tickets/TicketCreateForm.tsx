@@ -31,9 +31,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { type Project } from "@task-assistant/shared";
 
 type TicketCreateFormProps = {
   projectId?: string;
+  projects?: Project[];
   onSuccess?: () => void;
 };
 
@@ -41,6 +43,7 @@ type FormValues = z.infer<typeof CreateTicketSchema>;
 
 export function TicketCreateForm({
   projectId,
+  projects = [],
   onSuccess,
 }: TicketCreateFormProps) {
   const [isPending, startTransition] = useTransition();
@@ -54,17 +57,25 @@ export function TicketCreateForm({
       description: "",
       status: "TODO",
       priority: "MEDIUM",
-      projectId: projectId ?? undefined,
+      projectId: projectId ?? "",
       assigneeId: "",
       source: "MANUAL",
-      sourceUrl: "",
+      sourceUrl: undefined,
     },
   });
 
   const onSubmit: SubmitHandler<FormValues> = (values) => {
     setError(null);
+    // Clean up empty string values that should be undefined
+    const cleanedValues = {
+      ...values,
+      projectId: values.projectId || undefined,
+      assigneeId: values.assigneeId || undefined,
+      sourceUrl: values.sourceUrl || undefined,
+      description: values.description || undefined,
+    };
     startTransition(async () => {
-      const result = await createTicket(values);
+      const result = await createTicket(cleanedValues);
       if (result.success) {
         toast({ title: "Ticket created" });
         form.reset({ ...values, title: "", description: "" });
@@ -76,7 +87,7 @@ export function TicketCreateForm({
   };
 
   return (
-    <Card className="max-w-xl">
+    <Card className="max-w-xl" data-testid="ticket-create-form">
       <CardHeader>
         <CardTitle>Create Ticket</CardTitle>
       </CardHeader>
@@ -90,7 +101,7 @@ export function TicketCreateForm({
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ticket title" {...field} />
+                    <Input placeholder="Ticket title" {...field} data-testid="ticket-title-input" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,10 +113,21 @@ export function TicketCreateForm({
               name="projectId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Project UUID" {...field} />
-                  </FormControl>
+                  <FormLabel>Project</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger data-testid="ticket-project-select">
+                        <SelectValue placeholder="Select a project" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {projects.map((project) => (
+                        <SelectItem key={project.id} value={project.id ?? ""}>
+                          {project.name} ({project.key})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -122,6 +144,7 @@ export function TicketCreateForm({
                       placeholder="Optional description"
                       className="resize-none"
                       {...field}
+                      data-testid="ticket-desc-input"
                     />
                   </FormControl>
                   <FormMessage />
@@ -138,7 +161,7 @@ export function TicketCreateForm({
                     <FormLabel>Status</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger data-testid="ticket-status-select">
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                       </FormControl>
@@ -163,7 +186,7 @@ export function TicketCreateForm({
                     <FormLabel>Priority</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger data-testid="ticket-priority-select">
                           <SelectValue placeholder="Select priority" />
                         </SelectTrigger>
                       </FormControl>
@@ -182,12 +205,33 @@ export function TicketCreateForm({
             </div>
 
             {error && (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-sm text-destructive" role="alert" data-testid="ticket-form-error">
                 {error}
               </p>
             )}
 
-            <Button type="submit" disabled={isPending}>
+            <Button 
+              type="submit" 
+              disabled={isPending} 
+              data-testid="ticket-submit-btn"
+              onClick={() => {
+                console.log('[TicketCreateForm] Submit button clicked');
+                const formState = form.formState;
+                console.log('[TicketCreateForm] Form state:', {
+                  isValid: formState.isValid,
+                  isDirty: formState.isDirty,
+                  errors: formState.errors,
+                  values: form.getValues()
+                });
+                console.log('[TicketCreateForm] Detailed errors:', JSON.stringify(formState.errors, null, 2));
+                
+                // Manually trigger validation to see errors
+                form.trigger().then(isValid => {
+                  console.log('[TicketCreateForm] Manual validation result:', isValid);
+                  console.log('[TicketCreateForm] Errors after trigger:', form.formState.errors);
+                });
+              }}
+            >
               {isPending ? "Creating..." : "Create Ticket"}
             </Button>
           </form>
