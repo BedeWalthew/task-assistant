@@ -26,46 +26,60 @@ export function useTicketReorder() {
     mutationFn: reorderTicketApi,
     onMutate: async (input) => {
       // Cancel any outgoing refetches to prevent overwriting optimistic update
+      // Use partial matching to cancel all ticket queries regardless of filters
       await queryClient.cancelQueries({ queryKey: ["tickets"] });
 
-      const previousTickets = queryClient.getQueryData<{ items: Ticket[] }>([
-        "tickets",
-      ]);
-
-      // Optimistically update the cache
-      queryClient.setQueryData<{ items: Ticket[] }>(["tickets"], (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          items: old.items.map((t) =>
-            t.id === input.ticketId
-              ? { ...t, status: input.status, position: input.position }
-              : t
-          ),
-        };
+      // Get all ticket query caches and update them
+      const queryCache = queryClient.getQueryCache();
+      const ticketQueries = queryCache.findAll({ queryKey: ["tickets"] });
+      
+      const previousData = new Map<string, { items: Ticket[] }>();
+      
+      ticketQueries.forEach((query) => {
+        const key = JSON.stringify(query.queryKey);
+        const data = query.state.data as { items: Ticket[] } | undefined;
+        if (data) {
+          previousData.set(key, data);
+          // Optimistically update this cache entry
+          queryClient.setQueryData<{ items: Ticket[] }>(query.queryKey, {
+            ...data,
+            items: data.items.map((t) =>
+              t.id === input.ticketId
+                ? { ...t, status: input.status, position: input.position }
+                : t
+            ),
+          });
+        }
       });
 
-      return { previousTickets };
+      return { previousData };
     },
     onSuccess: (updatedTicket) => {
-      // Update cache with the actual server response (no refetch needed)
-      queryClient.setQueryData<{ items: Ticket[] }>(["tickets"], (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          items: old.items.map((t) =>
-            t.id === updatedTicket.id ? updatedTicket : t
-          ),
-        };
+      // Update all ticket query caches with the actual server response
+      const queryCache = queryClient.getQueryCache();
+      const ticketQueries = queryCache.findAll({ queryKey: ["tickets"] });
+      
+      ticketQueries.forEach((query) => {
+        queryClient.setQueryData<{ items: Ticket[] }>(query.queryKey, (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            items: old.items.map((t) =>
+              t.id === updatedTicket.id ? updatedTicket : t
+            ),
+          };
+        });
       });
     },
     onError: (_err, _input, context) => {
-      // Rollback to previous state on error
-      if (context?.previousTickets) {
-        queryClient.setQueryData(["tickets"], context.previousTickets);
+      // Rollback all caches to previous state on error
+      if (context?.previousData) {
+        context.previousData.forEach((data, key) => {
+          const queryKey = JSON.parse(key);
+          queryClient.setQueryData(queryKey, data);
+        });
       }
       toast.error("Failed to move ticket. Please try again.");
     },
-    // No onSettled invalidation - we update directly in onSuccess
   });
 }

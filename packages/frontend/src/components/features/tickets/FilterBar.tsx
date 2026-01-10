@@ -33,6 +33,10 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
   const pathname = usePathname();
   const current = useSearchParams();
 
+  // Determine current view
+  const currentView = (searchParams.view ?? "list").toLowerCase() === "board" ? "board" : "list";
+  const isBoardView = currentView === "board";
+
   const updateParams = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams(current?.toString() ?? "");
     Object.entries(updates).forEach(([key, value]) => {
@@ -117,23 +121,26 @@ export function FilterBar({ searchParams, projects }: FilterBarProps) {
         </SelectContent>
       </Select>
 
-      <Select
-        defaultValue={searchParams.status ?? "ANY"}
-        onValueChange={(value) =>
-          updateParams({ status: value === "ANY" ? undefined : value })
-        }
-      >
-        <SelectTrigger data-testid="filter-status">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          {statusOptions.map((status) => (
-            <SelectItem key={status} value={status}>
-              {status === "ANY" ? "Any status" : status.replace("_", " ")}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Status filter hidden in board view - board already groups by status */}
+      {!isBoardView && (
+        <Select
+          defaultValue={searchParams.status ?? "ANY"}
+          onValueChange={(value) =>
+            updateParams({ status: value === "ANY" ? undefined : value })
+          }
+        >
+          <SelectTrigger data-testid="filter-status">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            {statusOptions.map((status) => (
+              <SelectItem key={status} value={status}>
+                {status === "ANY" ? "Any status" : status.replace("_", " ")}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
 
       <Select
         defaultValue={searchParams.priority ?? "ANY"}

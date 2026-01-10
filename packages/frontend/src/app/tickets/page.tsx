@@ -145,6 +145,7 @@ export default async function TicketsPage(props: TicketsPageProps) {
               <TicketBoardWrapper
                 items={result.data.items}
                 projectLabels={projectLabels}
+                searchParams={toObject(resolvedSearchParams)}
               />
             ) : (
               <>
