@@ -1,4 +1,4 @@
-import { Project } from '@task-assistant/shared/src/schemas/project';
+import { Project } from "@task-assistant/shared";
 
 const API_URL = process.env.INTERNAL_API_URL || 'http://backend:3001';
 
@@ -24,15 +24,15 @@ export default async function ProjectList() {
   const projects = await getProjects();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="project-list">
       <h2 className="text-xl font-bold">Projects ({projects.length})</h2>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {projects.map((project) => (
-          <div key={project.id} className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow">
-            <h3 className="font-semibold text-lg">{project.name}</h3>
-            <p className="text-sm text-gray-500 mb-2">{project.key}</p>
+          <div key={project.id} className="p-4 border rounded-lg shadow-sm hover:shadow-md transition-shadow" data-testid="project-card">
+            <h3 className="font-semibold text-lg" data-testid="project-card-name">{project.name}</h3>
+            <p className="text-sm text-gray-500 mb-2" data-testid="project-card-key">{project.key}</p>
             {project.description && (
-              <p className="text-gray-700">{project.description}</p>
+              <p className="text-gray-700" data-testid="project-card-desc">{project.description}</p>
             )}
           </div>
         ))}

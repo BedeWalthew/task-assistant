@@ -23,16 +23,16 @@ export default function RootLayout({
       <body className={inter.className}>
         <QueryProvider>
           <div className="min-h-screen flex flex-col">
-            <header className="border-b">
+            <header className="border-b" data-testid="header">
               <div className="mx-auto max-w-5xl w-full px-6 py-4 flex items-center justify-between">
-                <Link href="/" className="text-xl font-semibold">
+                <Link href="/" className="text-xl font-semibold" data-testid="header-brand">
                   Task Assistant
                 </Link>
                 <nav className="flex items-center gap-4 text-sm font-medium">
-                  <Link href="/projects" className="hover:underline">
+                  <Link href="/projects" className="hover:underline" data-testid="nav-projects">
                     Projects
                   </Link>
-                  <Link href="/tickets" className="hover:underline">
+                  <Link href="/tickets" className="hover:underline" data-testid="nav-tickets">
                     Tickets
                   </Link>
                 </nav>

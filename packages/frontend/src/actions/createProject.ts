@@ -1,6 +1,6 @@
 "use server";
 
-import { CreateProjectSchema } from "@task-assistant/shared/src/schemas/project";
+import { CreateProjectSchema } from "@task-assistant/shared";
 import { revalidatePath } from "next/cache";
 
 const API_URL = process.env.INTERNAL_API_URL || "http://backend:3001";

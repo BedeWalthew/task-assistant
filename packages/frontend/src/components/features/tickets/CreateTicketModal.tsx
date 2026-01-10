@@ -12,12 +12,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { type Project } from "@task-assistant/shared";
 
 type CreateTicketModalProps = {
   projectId?: string;
+  projects?: Project[];
 };
 
-export function CreateTicketModal({ projectId }: CreateTicketModalProps) {
+export function CreateTicketModal({ projectId, projects = [] }: CreateTicketModalProps) {
   const [open, setOpen] = useState(false);
 
   const close = () => setOpen(false);
@@ -25,9 +27,9 @@ export function CreateTicketModal({ projectId }: CreateTicketModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">Create ticket</Button>
+        <Button size="sm" data-testid="create-ticket-btn">Create ticket</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl p-0">
+      <DialogContent className="max-w-2xl p-0" data-testid="create-ticket-modal">
         <DialogHeader className="border-b px-6 py-4 text-left">
           <DialogTitle>Create ticket</DialogTitle>
           <DialogDescription>
@@ -35,7 +37,7 @@ export function CreateTicketModal({ projectId }: CreateTicketModalProps) {
           </DialogDescription>
         </DialogHeader>
         <div className="p-6">
-          <TicketCreateForm projectId={projectId} onSuccess={close} />
+          <TicketCreateForm projectId={projectId} projects={projects} onSuccess={close} />
         </div>
         <DialogClose asChild>
           <Button
@@ -43,6 +45,7 @@ export function CreateTicketModal({ projectId }: CreateTicketModalProps) {
             size="sm"
             className="absolute right-3 top-3 h-9 w-9 rounded-full"
             aria-label="Close create ticket"
+            data-testid="close-ticket-modal"
           >
             ✕
           </Button>

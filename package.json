@@ -25,7 +25,9 @@
     "docker:backend:down": "docker compose rm -s -f backend",
     "docker:frontend:build": "docker compose build frontend",
     "docker:frontend:up": "docker compose up -d frontend",
-    "docker:frontend:down": "docker compose rm -s -f frontend"
+    "docker:frontend:down": "docker compose rm -s -f frontend",
+    "test:e2e": "pnpm --filter @task-assistant/frontend test:e2e",
+    "test:e2e:ui": "pnpm --filter @task-assistant/frontend test:e2e:ui"
   },
   "devDependencies": {
     "typescript": "^5.2.2"

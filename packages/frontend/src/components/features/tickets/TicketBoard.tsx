@@ -13,7 +13,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTicketReorder } from "@/hooks/useTicketReorder";
 import { TicketColumn } from "./TicketColumn";
 import TicketCard from "./TicketCard";
@@ -28,7 +28,12 @@ const statusOrder: TicketStatus[] = ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"];
 
 export function TicketBoard({ items, projectLabels }: TicketBoardProps) {
   const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const { mutate: reorderTicket } = useTicketReorder();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -107,6 +112,22 @@ export function TicketBoard({ items, projectLabels }: TicketBoardProps) {
       .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
   }));
 
+  // Prevent DndContext from rendering on server to avoid hydration mismatch
+  if (!isMounted) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-testid="ticket-board">
+        {grouped.map(({ status, tickets }) => (
+          <TicketColumn
+            key={status}
+            status={status}
+            tickets={tickets}
+            projectLabels={projectLabels}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <DndContext
       sensors={sensors}
@@ -114,7 +135,7 @@ export function TicketBoard({ items, projectLabels }: TicketBoardProps) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4" data-testid="ticket-board">
         {grouped.map(({ status, tickets }) => (
           <TicketColumn
             key={status}

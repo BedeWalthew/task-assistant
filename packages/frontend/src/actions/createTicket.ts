@@ -41,10 +41,11 @@ export async function createTicket(
       return { error: errorMessage };
     }
 
+    await response.json();
+
     revalidatePath("/tickets");
     return { success: true };
-  } catch (error) {
-    console.error("createTicket failed", error);
+  } catch {
     return { error: "Unexpected error creating ticket" };
   }
 }

@@ -41,12 +41,15 @@ export function TicketColumn({
     <div
       ref={setNodeRef}
       className="flex min-h-[260px] flex-col gap-3 rounded-xl border bg-gradient-to-b from-background via-card/50 to-card p-4 shadow-sm"
+      data-testid={`column-${status}`}
+      data-status={status}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold">{statusTitles[status]}</span>
+          <span className="text-sm font-semibold" data-testid={`column-title-${status}`}>{statusTitles[status]}</span>
           <span
             className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusAccent[status]}`}
+            data-testid={`column-count-${status}`}
           >
             {tickets.length}
           </span>

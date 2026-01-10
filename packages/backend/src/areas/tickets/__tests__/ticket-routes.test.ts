@@ -224,4 +224,115 @@ describe("Tickets API", () => {
       expect(response.status).toBe(404);
     });
   });
+
+  describe("PATCH /tickets/:id/reorder", () => {
+    let projectId: string;
+    let ticketId: string;
+
+    beforeEach(async () => {
+      await prisma.ticket.deleteMany();
+      await prisma.project.deleteMany();
+      const project = await createProject();
+      projectId = project.id;
+
+      const ticket = await prisma.ticket.create({
+        data: {
+          title: "Reorderable ticket",
+          projectId: project.id,
+          status: "TODO",
+          position: 1000,
+        },
+      });
+      ticketId = ticket.id;
+    });
+
+    it("should reorder a ticket to a new position", async () => {
+      const response = await request(app)
+        .patch(`/tickets/${ticketId}/reorder`)
+        .send({ position: 2000 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.position).toBe(2000);
+    });
+
+    it("should change status and position when moving across columns", async () => {
+      const response = await request(app)
+        .patch(`/tickets/${ticketId}/reorder`)
+        .send({ status: "IN_PROGRESS", position: 500 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.status).toBe("IN_PROGRESS");
+      expect(response.body.data.position).toBe(500);
+    });
+
+    it("should handle position conflicts by adjusting position slightly", async () => {
+      // Create another ticket at position 1500
+      await prisma.ticket.create({
+        data: {
+          title: "Blocking ticket",
+          projectId,
+          status: "TODO",
+          position: 1500,
+        },
+      });
+
+      const response = await request(app)
+        .patch(`/tickets/${ticketId}/reorder`)
+        .send({ position: 1500 });
+
+      expect(response.status).toBe(200);
+      // Should adjust position slightly to avoid conflict
+      expect(response.body.data.position).toBeCloseTo(1500.001, 3);
+    });
+
+    it("should keep the same status when only position changes", async () => {
+      const response = await request(app)
+        .patch(`/tickets/${ticketId}/reorder`)
+        .send({ position: 3000 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.status).toBe("TODO");
+      expect(response.body.data.position).toBe(3000);
+    });
+
+    it("should return 404 for non-existent ticket", async () => {
+      const response = await request(app)
+        .patch("/tickets/00000000-0000-0000-0000-000000000000/reorder")
+        .send({ position: 1000 });
+
+      expect(response.status).toBe(404);
+    });
+
+    it("should return 400 for invalid uuid", async () => {
+      const response = await request(app)
+        .patch("/tickets/not-a-uuid/reorder")
+        .send({ position: 1000 });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 400 for missing position", async () => {
+      const response = await request(app)
+        .patch(`/tickets/${ticketId}/reorder`)
+        .send({ status: "DONE" });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 400 for invalid status", async () => {
+      const response = await request(app)
+        .patch(`/tickets/${ticketId}/reorder`)
+        .send({ status: "INVALID_STATUS", position: 1000 });
+
+      expect(response.status).toBe(400);
+    });
+
+    it("should return 400 for non-positive position", async () => {
+      const response = await request(app)
+        .patch(`/tickets/${ticketId}/reorder`)
+        .send({ position: 0 });
+
+      expect(response.status).toBe(400);
+    });
+  });
 });

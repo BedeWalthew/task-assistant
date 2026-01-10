@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Project } from "@task-assistant/shared/src/schemas/project";
+import { Project } from "@task-assistant/shared";
 
 const API_URL = process.env.INTERNAL_API_URL || "http://backend:3001";
 

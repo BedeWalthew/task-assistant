@@ -22,6 +22,7 @@ export function TicketBoardWrapper({
 
   const { data } = useQuery<{ items: Ticket[] }>({
     queryKey: ["tickets"],
+    queryFn: () => Promise.resolve({ items: initialItems }),
     initialData: { items: initialItems },
     staleTime: Infinity,
   });

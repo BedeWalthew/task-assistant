@@ -28,7 +28,14 @@ export function DraggableTicketCard({
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      data-testid="draggable-ticket"
+      data-ticket-id={ticket.id}
+    >
       <TicketCard
         ticket={ticket}
         projectLabel={projectLabel}
