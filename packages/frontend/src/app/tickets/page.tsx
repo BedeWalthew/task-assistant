@@ -9,7 +9,7 @@ import {
 } from "@task-assistant/shared";
 import { type Project } from "@task-assistant/shared/src/schemas/project";
 import TicketList from "@/components/features/tickets/TicketList";
-import { TicketBoard } from "@/components/features/tickets/TicketBoard";
+import { TicketBoardWrapper } from "@/components/features/tickets/TicketBoardWrapper";
 import { FilterBar } from "@/components/features/tickets/FilterBar";
 import { CreateTicketModal } from "@/components/features/tickets/CreateTicketModal";
 import { Button } from "@/components/ui/button";
@@ -142,7 +142,7 @@ export default async function TicketsPage(props: TicketsPageProps) {
         {result.data && (
           <div className="space-y-4">
             {view === "board" ? (
-              <TicketBoard
+              <TicketBoardWrapper
                 items={result.data.items}
                 projectLabels={projectLabels}
               />

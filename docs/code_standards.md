@@ -26,8 +26,9 @@ All external data and API boundaries must be validated using Zod.
 - **ESLint**: For code quality and best practices.
 
 ## Testing
-- **Framework**: **Vitest**. (Compatible with Vite/Next.js).
+- **Framework**: **Jest** for unit/integration tests, **Playwright** for E2E tests.
 - **Strategy**: 
     - **Unit Tests**: For pure functions and shared utilities.
-    - **Integration Tests**: For API endpoints (using a test DB or mocked Prisma).
+    - **Integration Tests**: For API endpoints (using Supertest with a test DB or mocked Prisma).
+    - **E2E Tests**: For critical user flows (using Playwright).
     - **TDD Friendly**: Write tests *before* implementation where possible to allow AI-assisted iteration.

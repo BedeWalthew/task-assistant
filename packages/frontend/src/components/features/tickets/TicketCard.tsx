@@ -5,6 +5,7 @@ type TicketCardProps = {
   ticket: Ticket;
   projectLabel?: string;
   compact?: boolean;
+  isDragging?: boolean;
 };
 
 const statusStyles: Record<Ticket["status"], string> = {
@@ -25,13 +26,14 @@ export default function TicketCard({
   ticket,
   projectLabel,
   compact = false,
+  isDragging = false,
 }: TicketCardProps) {
   const isCompact = compact;
   return (
     <div
       className={`border rounded-lg shadow-sm hover:shadow-md transition-shadow bg-card ${
         isCompact ? "p-3 space-y-2" : "p-4 space-y-3"
-      }`}
+      } ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
     >
       <div className="space-y-1">
         <h3

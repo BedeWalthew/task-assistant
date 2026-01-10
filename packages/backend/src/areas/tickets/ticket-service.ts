@@ -6,6 +6,7 @@ import type {
   CreateTicketInput,
   TicketFilterInput,
   UpdateTicketInput,
+  ReorderTicketInput,
 } from "@task-assistant/shared";
 import { AppError } from "../../common/utils/AppError";
 
@@ -112,7 +113,11 @@ export const getAll = async (filters: TicketFilterInput) => {
   const [items, total] = await Promise.all([
     prisma.ticket.findMany({
       where,
-      orderBy: { [safeSortBy]: safeSortOrder },
+      orderBy: [
+        { status: "asc" },
+        { position: "asc" },
+        { [safeSortBy]: safeSortOrder },
+      ],
       skip,
       take: safeLimit,
     }),
@@ -186,4 +191,87 @@ export const deleteTicket = async (id: string) => {
     }
     throw error;
   }
+};
+
+const POSITION_GAP = 1000;
+const MIN_GAP = 0.001;
+
+function calculatePosition(
+  beforePosition: number | null,
+  afterPosition: number | null
+): number {
+  if (beforePosition === null && afterPosition === null) {
+    return POSITION_GAP;
+  }
+  if (beforePosition === null) {
+    return afterPosition! / 2;
+  }
+  if (afterPosition === null) {
+    return beforePosition + POSITION_GAP;
+  }
+
+  const newPosition = (beforePosition + afterPosition) / 2;
+
+  if (afterPosition - beforePosition < MIN_GAP) {
+    throw new AppError("Position gap too small, rebalancing required", 409);
+  }
+
+  return newPosition;
+}
+
+export const reorderTicket = async (
+  ticketId: string,
+  input: ReorderTicketInput
+): Promise<Ticket> => {
+  return prisma.$transaction(async (tx) => {
+    const ticket = await tx.ticket.findUnique({ where: { id: ticketId } });
+    if (!ticket) throw new AppError("Ticket not found", 404);
+
+    const targetStatus = input.status ?? ticket.status;
+    const targetPosition = input.position;
+
+    const conflicting = await tx.ticket.findFirst({
+      where: {
+        projectId: ticket.projectId,
+        status: targetStatus,
+        position: targetPosition,
+        id: { not: ticketId },
+      },
+    });
+
+    let finalPosition = targetPosition;
+    if (conflicting) {
+      finalPosition = targetPosition + 0.001;
+    }
+
+    return tx.ticket.update({
+      where: { id: ticketId },
+      data: {
+        status: targetStatus,
+        position: finalPosition,
+      },
+    });
+  });
+};
+
+export const rebalanceColumn = async (
+  projectId: string,
+  status: string
+): Promise<void> => {
+  await prisma.$transaction(async (tx) => {
+    const tickets = await tx.ticket.findMany({
+      where: { projectId, status },
+      orderBy: { position: "asc" },
+      select: { id: true },
+    });
+
+    const updates = tickets.map((ticket, index) =>
+      tx.ticket.update({
+        where: { id: ticket.id },
+        data: { position: (index + 1) * POSITION_GAP },
+      })
+    );
+
+    await Promise.all(updates);
+  });
 };

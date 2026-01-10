@@ -23,6 +23,7 @@ export const TicketSchema = z.object({
   description: z.string().optional(),
   status: TicketStatus.default("TODO"),
   priority: TicketPriority.default("MEDIUM"),
+  position: z.number().default(0),
   projectId: z.string().uuid(),
   assigneeId: z.string().optional(),
   source: z.string().default("MANUAL"), // JIRA, GITHUB, etc.
@@ -71,3 +72,10 @@ export const TicketFilterSchema = z.object({
   limit: numberFromQuery("limit", 20, 100),
 });
 export type TicketFilterInput = z.infer<typeof TicketFilterSchema>;
+
+export const ReorderTicketSchema = z.object({
+  status: TicketStatus.optional(),
+  position: z.number().positive(),
+  referenceTicketId: z.string().uuid().optional(),
+});
+export type ReorderTicketInput = z.infer<typeof ReorderTicketSchema>;

@@ -1,69 +1,140 @@
-import { Ticket, TicketStatus } from "@task-assistant/shared";
+"use client";
+
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { useState } from "react";
+import { useTicketReorder } from "@/hooks/useTicketReorder";
+import { TicketColumn } from "./TicketColumn";
 import TicketCard from "./TicketCard";
+import type { Ticket, TicketStatus } from "@task-assistant/shared";
 
 type TicketBoardProps = {
   items: Ticket[];
   projectLabels?: Record<string, string>;
 };
 
-const statusOrder = TicketStatus.options;
-const statusTitles: Record<TicketStatus, string> = {
-  TODO: "Todo",
-  IN_PROGRESS: "In Progress",
-  DONE: "Done",
-  BLOCKED: "Blocked",
-};
-
-const statusAccent: Record<TicketStatus, string> = {
-  TODO: "bg-slate-100 text-slate-700 border-slate-200",
-  IN_PROGRESS: "bg-blue-50 text-blue-700 border-blue-100",
-  DONE: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  BLOCKED: "bg-amber-50 text-amber-800 border-amber-100",
-};
+const statusOrder: TicketStatus[] = ["TODO", "IN_PROGRESS", "DONE", "BLOCKED"];
 
 export function TicketBoard({ items, projectLabels }: TicketBoardProps) {
+  const [activeTicket, setActiveTicket] = useState<Ticket | null>(null);
+  const { mutate: reorderTicket } = useTicketReorder();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
+    }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const ticket = items.find((t) => t.id === event.active.id);
+    setActiveTicket(ticket ?? null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveTicket(null);
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const ticketId = active.id as string;
+    const overId = over.id as string;
+
+    const activeTicket = items.find((t) => t.id === ticketId);
+    if (!activeTicket) return;
+
+    let targetStatus: TicketStatus;
+    if (statusOrder.includes(overId as TicketStatus)) {
+      targetStatus = overId as TicketStatus;
+    } else {
+      const overTicket = items.find((t) => t.id === overId);
+      targetStatus = overTicket?.status ?? activeTicket.status;
+    }
+
+    const columnTickets = items
+      .filter((t) => t.status === targetStatus && t.id !== ticketId)
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+
+    let newPosition: number;
+
+    if (statusOrder.includes(overId as TicketStatus)) {
+      if (columnTickets.length > 0) {
+        newPosition =
+          (columnTickets[columnTickets.length - 1].position ?? 0) + 1000;
+      } else {
+        newPosition = 1000;
+      }
+    } else {
+      const overIndex = columnTickets.findIndex((t) => t.id === overId);
+
+      if (overIndex === -1) {
+        newPosition =
+          columnTickets.length > 0
+            ? (columnTickets[columnTickets.length - 1].position ?? 0) + 1000
+            : 1000;
+      } else {
+        const before =
+          overIndex > 0 ? columnTickets[overIndex - 1].position ?? 0 : 0;
+        const after = columnTickets[overIndex].position ?? before + 2000;
+        newPosition =
+          before === 0 && after > 0 ? after / 2 : (before + after) / 2;
+
+        if (newPosition <= 0) {
+          newPosition = 1;
+        }
+      }
+    }
+
+    reorderTicket({ ticketId, status: targetStatus, position: newPosition });
+  };
+
   const grouped = statusOrder.map((status) => ({
     status,
-    tickets: items.filter((ticket) => ticket.status === status),
+    tickets: items
+      .filter((ticket) => ticket.status === status)
+      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0)),
   }));
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      {grouped.map(({ status, tickets }) => (
-        <div
-          key={status}
-          className="flex min-h-[260px] flex-col gap-3 rounded-xl border bg-gradient-to-b from-background via-card/50 to-card p-4 shadow-sm"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold">
-                {statusTitles[status]}
-              </span>
-              <span
-                className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusAccent[status]}`}
-              >
-                {tickets.length}
-              </span>
-            </div>
-          </div>
-          <div className="flex flex-col gap-3">
-            {tickets.length === 0 ? (
-              <div className="rounded-lg border border-dashed bg-muted/40 p-4 text-sm text-muted-foreground">
-                No tickets in this column.
-              </div>
-            ) : (
-              tickets.map((ticket) => (
-                <TicketCard
-                  key={ticket.id}
-                  ticket={ticket}
-                  projectLabel={projectLabels?.[ticket.projectId]}
-                  compact
-                />
-              ))
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {grouped.map(({ status, tickets }) => (
+          <TicketColumn
+            key={status}
+            status={status}
+            tickets={tickets}
+            projectLabels={projectLabels}
+          />
+        ))}
+      </div>
+
+      <DragOverlay>
+        {activeTicket && (
+          <TicketCard
+            ticket={activeTicket}
+            projectLabel={projectLabels?.[activeTicket.projectId]}
+            compact
+            isDragging
+          />
+        )}
+      </DragOverlay>
+    </DndContext>
   );
 }
