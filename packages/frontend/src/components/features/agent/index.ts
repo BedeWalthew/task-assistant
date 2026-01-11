@@ -3,3 +3,5 @@ export { ChatInterface } from "./ChatInterface";
 export { ChatInput } from "./ChatInput";
 export { ChatMessageComponent } from "./ChatMessage";
 export { ToolCallDisplay } from "./ToolCallDisplay";
+export { VoiceChatButton } from "./VoiceChatButton";
+export { VoiceInputStatus } from "./VoiceInputStatus";

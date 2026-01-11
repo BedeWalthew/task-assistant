@@ -298,7 +298,7 @@ test.describe("AI Agent Chat Interface", () => {
       const input = page.locator('[data-testid="chat-input"]');
       await expect(input).toHaveAttribute(
         "placeholder",
-        "Ask the AI assistant..."
+        "Type or speak your message..."
       );
     });
 
@@ -378,6 +378,65 @@ test.describe("AI Agent Chat Interface", () => {
       await expect(page.getByText(/error|sorry/i)).toBeVisible({
         timeout: 10000,
       });
+    });
+  });
+
+  test.describe("Voice Input Feature", () => {
+    test.beforeEach(async ({ page }) => {
+      await page.locator('[data-testid="chat-toggle-btn"]').click();
+      await expect(page.locator('[data-testid="chat-interface"]')).toBeVisible();
+    });
+
+    test("voice input button is visible in chat interface", async ({ page }) => {
+      // Voice input button should be visible (either supported or unsupported variant)
+      const voiceBtn = page.locator('[data-testid^="voice-input-btn"]');
+      await expect(voiceBtn).toBeVisible();
+    });
+
+    test("voice input button has proper accessibility attributes", async ({ page }) => {
+      const voiceBtn = page.locator('[data-testid^="voice-input-btn"]');
+      await expect(voiceBtn).toHaveAttribute("aria-label");
+      await expect(voiceBtn).toHaveAttribute("title");
+    });
+
+    test("chat input shows updated placeholder with voice mention", async ({ page }) => {
+      const chatInput = page.locator('[data-testid="chat-input"]');
+      const placeholder = await chatInput.getAttribute("placeholder");
+      expect(placeholder).toMatch(/type|speak/i);
+    });
+
+    test("chat input has voice keyboard shortcut hint in aria-label", async ({ page }) => {
+      const chatInput = page.locator('[data-testid="chat-input"]');
+      const ariaLabel = await chatInput.getAttribute("aria-label");
+      expect(ariaLabel).toContain("Ctrl+Shift+V");
+    });
+
+    test("voice button shows correct title with keyboard shortcut", async ({ page, browserName }) => {
+      // Skip for browsers without Web Speech API support (check the button state)
+      const voiceBtn = page.locator('[data-testid="voice-input-btn"]');
+      const unsupportedBtn = page.locator('[data-testid="voice-input-btn-unsupported"]');
+      
+      if (await unsupportedBtn.isVisible()) {
+        // Browser doesn't support Web Speech API
+        const title = await unsupportedBtn.getAttribute("title");
+        expect(title).toContain("not supported");
+      } else if (await voiceBtn.isVisible()) {
+        // Browser supports Web Speech API
+        const title = await voiceBtn.getAttribute("title");
+        expect(title).toContain("Ctrl+Shift+V");
+      }
+    });
+
+    test("unsupported browser shows disabled voice button with message", async ({ page, browserName }) => {
+      // Firefox doesn't support Web Speech API
+      test.skip(browserName === "chromium", "This test is for browsers without Web Speech API");
+      
+      const unsupportedBtn = page.locator('[data-testid="voice-input-btn-unsupported"]');
+      await expect(unsupportedBtn).toBeVisible();
+      await expect(unsupportedBtn).toBeDisabled();
+      
+      const title = await unsupportedBtn.getAttribute("title");
+      expect(title).toContain("not supported");
     });
   });
 });
