@@ -52,6 +52,8 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       # Used by server-side code (ProjectList.tsx)
       INTERNAL_API_URL: ${INTERNAL_API_URL}
+      # Agent API URL for AI features
+      NEXT_PUBLIC_AGENT_URL: ${NEXT_PUBLIC_AGENT_URL:-http://localhost:8000}
     ports:
       - "3000:3000"
     volumes:
@@ -60,6 +62,24 @@ services:
       - /app/node_modules
       - /app/packages/frontend/node_modules
       - /app/packages/shared/node_modules
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  agent:
+    build:
+      context: ./packages/agent
+      dockerfile: Dockerfile
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      BACKEND_API_URL: http://backend:3001
+      AGENT_PORT: 8000
+      LOG_LEVEL: ${AGENT_LOG_LEVEL:-INFO}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./packages/agent/src:/app/src
     depends_on:
       - backend
     networks:

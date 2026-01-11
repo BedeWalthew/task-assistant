@@ -38,3 +38,13 @@ coverage
 # Vercel
 .vercel
 
+#python
+.pyc
+.mypy_cache
+__pycache__/
+# Python virtual environments and caches
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/

@@ -92,11 +92,28 @@
 
 ### Phase 4: AI Agent Integration
 
-- [ ] Python agent setup (or Node.js alternative)
-- [ ] Google Gen AI SDK integration
-- [ ] Agent API endpoints
-- [ ] Natural language task creation
-- [ ] Agent-ticket interaction
+- [x] Architecture specification document
+- [x] Agent package setup (Python + FastAPI + Google ADK)
+- [x] API client for backend communication
+- [x] Tool definitions:
+  - [x] `create_ticket` - Create tickets via natural language
+  - [x] `update_ticket` - Modify existing tickets
+  - [x] `move_ticket` - Change ticket status
+  - [x] `delete_ticket` - Remove tickets (with confirmation)
+  - [x] `list_tickets` - Query tickets with filters
+  - [x] `search_tickets` - Full-text search
+  - [x] `list_projects` / `get_project`
+  - [x] `get_board_summary` - Kanban overview
+- [x] Agent service with Gemini LLM (Google ADK)
+- [x] Session management via InMemorySessionService (ADK built-in)
+- [x] Add agent to Docker Compose
+- [x] Streaming responses (SSE)
+- [x] Interactive test mode
+- [x] Comprehensive README with examples
+- [ ] Backend `/agent/chat` endpoint (proxy to agent service)
+- [ ] Frontend chat UI component
+- [ ] Rate limiting per user
+- [ ] Voice input support (future)
 
 ---
 
