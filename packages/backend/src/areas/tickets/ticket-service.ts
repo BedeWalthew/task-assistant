@@ -228,7 +228,29 @@ export const reorderTicket = async (
     if (!ticket) throw new AppError("Ticket not found", 404);
 
     const targetStatus = input.status ?? ticket.status;
-    const targetPosition = input.position;
+    
+    // If position not provided, calculate position at top of column
+    let targetPosition = input.position;
+    if (targetPosition === undefined) {
+      // Find the lowest position in the target column and place before it
+      const topTicket = await tx.ticket.findFirst({
+        where: {
+          projectId: ticket.projectId,
+          status: targetStatus,
+          id: { not: ticketId },
+        },
+        orderBy: { position: 'asc' },
+        select: { position: true },
+      });
+      
+      if (topTicket) {
+        // Place before the first ticket (half its position)
+        targetPosition = topTicket.position / 2;
+      } else {
+        // Empty column, use default gap
+        targetPosition = POSITION_GAP;
+      }
+    }
 
     const conflicting = await tx.ticket.findFirst({
       where: {

@@ -84,7 +84,15 @@ class ReorderTicketRequest(BaseModel):
     """Request to reorder/move a ticket."""
 
     status: Optional[TicketStatus] = None
-    position: float
+    position: Optional[float] = None  # If not provided, defaults to top of column
+
+
+class CreateProjectRequest(BaseModel):
+    """Request to create a project."""
+
+    name: str
+    description: Optional[str] = None
+    key: str  # 2-10 character project key like "FRNT"
 
 
 class TicketFilter(BaseModel):

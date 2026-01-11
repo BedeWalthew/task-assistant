@@ -323,6 +323,39 @@ def _create_tools(api_client: APIClient) -> list:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
+    async def create_project(name: str, key: str, description: str = "") -> dict:
+        """Create a new project in the task management system.
+
+        Args:
+            name: Name of the project (e.g., "Frontend Development")
+            key: Short unique key for the project (2-10 uppercase chars, e.g., "FRNT")
+            description: Optional description of the project
+
+        Returns:
+            The created project details or error message
+        """
+        try:
+            # Ensure key is uppercase and valid length
+            key = key.upper()[:10]
+            if len(key) < 2:
+                return {
+                    "success": False,
+                    "error": "Project key must be at least 2 characters",
+                }
+            
+            project = await api_client.create_project(
+                name=name,
+                key=key,
+                description=description or None,
+            )
+            return {
+                "success": True,
+                "message": f"Created project '{project.name}' ({project.key})",
+                "project": project.model_dump(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
     return [
         create_ticket,
         update_ticket,
@@ -334,6 +367,7 @@ def _create_tools(api_client: APIClient) -> list:
         list_projects,
         get_project,
         get_board_summary,
+        create_project,
     ]
 
 

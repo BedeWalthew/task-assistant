@@ -75,7 +75,7 @@ export type TicketFilterInput = z.infer<typeof TicketFilterSchema>;
 
 export const ReorderTicketSchema = z.object({
   status: TicketStatus.optional(),
-  position: z.number().positive(),
+  position: z.number().positive().optional(), // If not provided, defaults to top of column
   referenceTicketId: z.string().uuid().optional(),
 });
 export type ReorderTicketInput = z.infer<typeof ReorderTicketSchema>;
