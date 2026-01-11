@@ -356,6 +356,47 @@ def _create_tools(api_client: APIClient) -> list:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
+    async def delete_project(
+        project_id: str = "",
+    ) -> dict:
+        """Delete a project from the task management system.
+
+        Args:
+            project_id: Project ID (UUID) or project key/name. Will attempt to resolve by name/key if not a valid UUID.
+
+        Returns:
+            Success confirmation or error message
+        """
+        try:
+            # Try to resolve project name/key to ID if provided
+            resolved_project_id = project_id
+            if project_id:
+                # Check if it's not a UUID (contains no hyphens or too short)
+                if '-' not in project_id or len(project_id) < 30:
+                    # Try to find project by name or key
+                    project = await api_client.get_project_by_name(project_id)
+                    if project:
+                        resolved_project_id = project.id
+                    else:
+                        return {
+                            "success": False,
+                            "error": f"Project '{project_id}' not found. Use list_projects to see available projects.",
+                        }
+            
+            if not resolved_project_id:
+                return {
+                    "success": False,
+                    "error": "Project ID or name is required",
+                }
+            
+            await api_client.delete_project(resolved_project_id)
+            return {
+                "success": True,
+                "message": f"Successfully deleted project '{project_id}'",
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
     return [
         create_ticket,
         update_ticket,
@@ -368,6 +409,7 @@ def _create_tools(api_client: APIClient) -> list:
         get_project,
         get_board_summary,
         create_project,
+        delete_project,
     ]
 
 

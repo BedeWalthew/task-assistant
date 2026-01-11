@@ -55,6 +55,14 @@ async def main():
             "name": "7. Filter by priority",
             "query": "List all HIGH priority tickets in the AI Agent project",
         },
+        {
+            "name": "8. Create a test project",
+            "query": "Create a new project called 'Test Project' with key 'TEST' and description 'Temporary project for testing'",
+        },
+        {
+            "name": "9. Delete the test project",
+            "query": "Delete the Test Project",
+        },
     ]
     
     user_id = "test_user"

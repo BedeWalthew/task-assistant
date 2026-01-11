@@ -8,6 +8,7 @@ import httpx
 from .schemas import (
     CreateProjectRequest,
     CreateTicketRequest,
+    DeleteProjectRequest,
     PaginatedTickets,
     Project,
     ReorderTicketRequest,
@@ -117,6 +118,19 @@ class APIClient:
         # Backend wraps responses in { "data": {...} }
         project_data = response_data.get("data", response_data) if isinstance(response_data, dict) and "data" in response_data else response_data
         return Project.model_validate(project_data)
+
+    async def delete_project(self, project_id: str) -> bool:
+        """Delete a project by ID.
+        
+        Args:
+            project_id: The UUID of the project to delete
+            
+        Returns:
+            True if deletion was successful
+        """
+        response = await self.client.delete(f"/projects/{project_id}")
+        response.raise_for_status()
+        return True
 
     # ==================== Tickets ====================
 

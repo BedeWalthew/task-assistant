@@ -95,6 +95,12 @@ class CreateProjectRequest(BaseModel):
     key: str  # 2-10 character project key like "FRNT"
 
 
+class DeleteProjectRequest(BaseModel):
+    """Request to delete a project."""
+
+    project_id: str
+
+
 class TicketFilter(BaseModel):
     """Filter parameters for listing tickets."""
 
