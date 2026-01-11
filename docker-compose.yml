@@ -52,8 +52,10 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
       # Used by server-side code (ProjectList.tsx)
       INTERNAL_API_URL: ${INTERNAL_API_URL}
-      # Agent API URL for AI features
+      # Agent API URL for AI features (client-side)
       NEXT_PUBLIC_AGENT_URL: ${NEXT_PUBLIC_AGENT_URL:-http://localhost:8000}
+      # Agent API URL for server-side SSE proxy
+      INTERNAL_AGENT_URL: http://agent:8000
     ports:
       - "3000:3000"
     volumes:

@@ -10,8 +10,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Install uv for fast package management
 RUN pip install uv
 
-# Copy dependency files
-COPY pyproject.toml ./
+# Copy dependency files (README.md is required by pyproject.toml)
+COPY pyproject.toml README.md ./
 
 # Install dependencies
 RUN uv pip install --system -e .
