@@ -6,6 +6,8 @@
     "build": "pnpm -r build",
     "dev": "pnpm -r dev",
     "test": "pnpm run --filter backend test",
+    "test:all": "pnpm test:backend && pnpm test:e2e",
+    "test:backend": "docker compose -f docker-compose.test.yml up -d && pnpm test:backend:testdb:migrate && pnpm test:backend:testdb",
     "test:backend:testdb:migrate": "DATABASE_URL=${DATABASE_URL_TEST:-postgres://user:password@localhost:5434/task_assistant_test?schema=public} pnpm --filter @task-assistant/backend db:migrate",
     "test:backend:testdb": "NODE_ENV=test DATABASE_URL=${DATABASE_URL_TEST:-postgres://user:password@localhost:5434/task_assistant_test?schema=public} pnpm --filter @task-assistant/backend test",
     "db:seed": "npx tsx packages/backend/src/prisma/seed.ts",

@@ -6,6 +6,7 @@ Uses Google ADK with LlmAgent, Runner, and InMemorySessionService.
 import json
 import logging
 from contextlib import asynccontextmanager
+from datetime import datetime
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -15,6 +16,14 @@ from sse_starlette.sse import EventSourceResponse
 
 from .agent import TaskAgentService
 from .config import settings
+
+
+def json_serializer(obj: Any) -> str:
+    """Custom JSON serializer for objects not serializable by default."""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
 
 # Configure logging
 logging.basicConfig(
@@ -180,7 +189,7 @@ async def chat_stream(request: ChatRequest):
                 event_type = chunk.get("type", "text")
                 yield {
                     "event": event_type,
-                    "data": json.dumps(chunk),
+                    "data": json.dumps(chunk, default=json_serializer),
                 }
 
         except Exception as e:

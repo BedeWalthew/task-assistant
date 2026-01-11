@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { ChatButton } from "@/components/features/agent";
 import Link from "next/link";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -40,6 +41,7 @@ export default function RootLayout({
             </header>
             <main className="flex-1">{children}</main>
           </div>
+          <ChatButton />
           <Toaster />
           <SonnerToaster />
         </QueryProvider>

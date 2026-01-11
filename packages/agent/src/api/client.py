@@ -6,7 +6,9 @@ from typing import Any, Optional
 import httpx
 
 from .schemas import (
+    CreateProjectRequest,
     CreateTicketRequest,
+    DeleteProjectRequest,
     PaginatedTickets,
     Project,
     ReorderTicketRequest,
@@ -88,6 +90,47 @@ class APIClient:
             if name_lower in project.name.lower() or name_lower == project.key.lower():
                 return project
         return None
+
+    async def create_project(
+        self,
+        name: Optional[str] = None,
+        description: Optional[str] = None,
+        key: Optional[str] = None,
+        data: Optional[CreateProjectRequest] = None,
+    ) -> Project:
+        """Create a new project.
+        
+        Can be called with either a CreateProjectRequest object or individual kwargs.
+        """
+        if data is None:
+            if name is None or key is None:
+                raise ValueError("Either 'data' or both 'name' and 'key' must be provided")
+            data = CreateProjectRequest(
+                name=name,
+                description=description,
+                key=key,
+            )
+        
+        payload = data.model_dump(by_alias=True, exclude_none=True)
+        response = await self.client.post("/projects", json=payload)
+        response.raise_for_status()
+        response_data = response.json()
+        # Backend wraps responses in { "data": {...} }
+        project_data = response_data.get("data", response_data) if isinstance(response_data, dict) and "data" in response_data else response_data
+        return Project.model_validate(project_data)
+
+    async def delete_project(self, project_id: str) -> bool:
+        """Delete a project by ID.
+        
+        Args:
+            project_id: The UUID of the project to delete
+            
+        Returns:
+            True if deletion was successful
+        """
+        response = await self.client.delete(f"/projects/{project_id}")
+        response.raise_for_status()
+        return True
 
     # ==================== Tickets ====================
 

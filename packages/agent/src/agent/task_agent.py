@@ -323,6 +323,80 @@ def _create_tools(api_client: APIClient) -> list:
         except Exception as e:
             return {"success": False, "error": str(e)}
 
+    async def create_project(name: str, key: str, description: str = "") -> dict:
+        """Create a new project in the task management system.
+
+        Args:
+            name: Name of the project (e.g., "Frontend Development")
+            key: Short unique key for the project (2-10 uppercase chars, e.g., "FRNT")
+            description: Optional description of the project
+
+        Returns:
+            The created project details or error message
+        """
+        try:
+            # Ensure key is uppercase and valid length
+            key = key.upper()[:10]
+            if len(key) < 2:
+                return {
+                    "success": False,
+                    "error": "Project key must be at least 2 characters",
+                }
+            
+            project = await api_client.create_project(
+                name=name,
+                key=key,
+                description=description or None,
+            )
+            return {
+                "success": True,
+                "message": f"Created project '{project.name}' ({project.key})",
+                "project": project.model_dump(),
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
+    async def delete_project(
+        project_id: str = "",
+    ) -> dict:
+        """Delete a project from the task management system.
+
+        Args:
+            project_id: Project ID (UUID) or project key/name. Will attempt to resolve by name/key if not a valid UUID.
+
+        Returns:
+            Success confirmation or error message
+        """
+        try:
+            # Try to resolve project name/key to ID if provided
+            resolved_project_id = project_id
+            if project_id:
+                # Check if it's not a UUID (contains no hyphens or too short)
+                if '-' not in project_id or len(project_id) < 30:
+                    # Try to find project by name or key
+                    project = await api_client.get_project_by_name(project_id)
+                    if project:
+                        resolved_project_id = project.id
+                    else:
+                        return {
+                            "success": False,
+                            "error": f"Project '{project_id}' not found. Use list_projects to see available projects.",
+                        }
+            
+            if not resolved_project_id:
+                return {
+                    "success": False,
+                    "error": "Project ID or name is required",
+                }
+            
+            await api_client.delete_project(resolved_project_id)
+            return {
+                "success": True,
+                "message": f"Successfully deleted project '{project_id}'",
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+
     return [
         create_ticket,
         update_ticket,
@@ -334,6 +408,8 @@ def _create_tools(api_client: APIClient) -> list:
         list_projects,
         get_project,
         get_board_summary,
+        create_project,
+        delete_project,
     ]
 
 
